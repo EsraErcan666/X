@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>X Clone</title>
+  <link rel="stylesheet" href="home.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body>
+  <div class="main-container">  
+    <div class="left-sidebar">
+      <div class="logo">
+        <i class="fas fa-gem"></i>
+      </div>
+      <nav>
+        <ul>
+          <li class="active"><i class="fas fa-home"></i> <span>Home</span></li>
+          <li><i class="fas fa-search"></i> <span>Explore</span></li>
+          <li><i class="fas fa-bell"></i> <span>Notifications</span></li>
+          <li><i class="fas fa-envelope"></i> <span>Messages</span></li>
+          <li><i class="fas fa-bookmark"></i> <span>Bookmarks</span></li>
+          <li><i class="fas fa-users"></i> <span>Communities</span></li>
+          <li><i class="fas fa-gem"></i> <span>Premium</span></li>
+          <li><i class="fas fa-check-circle"></i> <span>Verified Orgs</span></li>
+          <li><i class="fas fa-user"></i> <span>Profile</span></li>
+          <li><i class="fas fa-ellipsis-h"></i> <span>More</span></li>
+        </ul>
+      </nav>
+      <button class="post-button">Post</button>
+      
+     
+      <div class="profile-section">
+        <div class="profile-info">
+          <img src="" alt="Profile" class="profile-avatar">
+          <div class="profile-details">
+            <span class="profile-name">Esra Ercan</span>
+            <span class="profile-username">@Ciklet666</span>
+          </div>
+          <div class="profile-menu">
+            <i class="fas fa-ellipsis-h"></i>
+            <div class="profile-dropdown">
+              <div class="dropdown-item add-account-item">
+                <span>Add an existing account</span>
+              </div>
+              <div class="dropdown-item logout-item">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Log out @Ciklet666</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="tabs">
+        <div class="tab active">For you</div>
+        <div class="tab">Following</div>
+      </div>
+
+      <div class="tweet-box">
+        <textarea id="tweetInput" placeholder="What's happening?" maxlength="280"></textarea>
+        <div class="tweet-actions">
+          <div class="tweet-icons">
+            <i class="far fa-image"></i>
+            <i class="fas fa-film"></i>
+            <i class="far fa-chart-bar"></i>
+            <i class="far fa-smile"></i>
+            <i class="far fa-calendar"></i>
+            <i class="fas fa-map-marker-alt"></i>
+          </div>
+          <button onclick="postTweet()">Post</button>
+        </div>
+      </div>
+
+      <div class="show-posts">Show 105 posts</div>
+
+      <div class="earn-banner">
+        <div class="earn-content">
+          <h2>Earn on X</h2>
+          <p>If eligible, you can receive a share of ads revenue just by posting on X. You must be subscribed to X Premium.</p>
+          <button class="subscribe-button">Subscribe today</button>
+        </div>
+      </div>
+
+      <div class="premium-post">
+        <div class="post-header">
+          <img src="" alt="X Premium" class="avatar" />
+          <div class="post-info">
+            <span class="name">Premium <i class="fas fa-check-circle"></i></span>
+            <span class="username">@premium</span>
+          </div>
+          <div class="post-ad">Ad</div>
+        </div>
+        <div class="post-content">
+          <p>Posting great content on X?</p>
+          <p>Subscribe to Premium to join our revenue share program.</p>
+        </div>
+        <div class="premium-banner">
+          <img src="" alt="X Premium Banner" />
+        </div>
+      </div>
+
+      <section id="tweetList">
+        <!-- Tweet'ler burada gösterilecek -->
+      </section>
+      
+      <!-- Tweet Template -->
+      <template id="tweetTemplate">
+        <div class="tweet">
+          <div class="post-header">
+            <img src="" alt="" class="avatar" />
+            <div class="post-info">
+              <span class="name"></span>
+              <span class="username"></span>
+            </div>
+            <div class="tweet-more"><i class="fas fa-ellipsis-h"></i></div>
+          </div>
+          <div class="post-content">
+            <p></p>
+          </div>
+          <div class="tweet-image" style="display: none;">
+            <img src="" alt="Tweet image" />
+          </div>
+          <div class="tweet-actions">
+            <div class="tweet-action comment-action">
+              <i class="far fa-comment"></i> <span class="comment-count">0</span>
+            </div>
+            <div class="tweet-action retweet-action">
+              <i class="fas fa-retweet"></i> <span class="retweet-count">0</span>
+            </div>
+            <div class="tweet-action like-action">
+              <i class="far fa-heart"></i> <span class="like-count">0</span>
+            </div>
+            <div class="tweet-action">
+              <i class="fas fa-chart-bar"></i> <span class="view-count">0</span>
+            </div>
+            <div class="tweet-action">
+              <i class="fas fa-share-alt"></i>
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+
+
+    <div class="right-sidebar">
+      <div class="search-container">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Search" />
+      </div>
+
+      <div class="premium-card">
+        <h2>Subscribe to Premium</h2>
+        <p>Subscribe to unlock new features and if eligible, receive a share of revenue.</p>
+        <button class="subscribe-button">Subscribe</button>
+      </div>
+
+      <div class="trending-section">
+        <h2>What's happening</h2>
+        <div class="trending-item">
+          <div class="trend-category">Business & finance · Trending</div>
+          <div class="trend-tag">#kira</div>
+          <div class="trend-more"><i class="fas fa-ellipsis-h"></i></div>
+        </div>
+        <div class="trending-item">
+          <div class="trend-category">Politics · Trending</div>
+          <div class="trend-tag">Mnp Sözünü Tut</div>
+          <div class="trend-posts">12.0K posts</div>
+          <div class="trend-more"><i class="fas fa-ellipsis-h"></i></div>
+        </div>
+        <div class="trending-item">
+          <div class="trend-category">Business & finance · Trending</div>
+          <div class="trend-tag">#faiz</div>
+          <div class="trend-more"><i class="fas fa-ellipsis-h"></i></div>
+        </div>
+        <div class="trending-item">
+          <div class="trend-category">Trending in Turkey</div>
+          <div class="trend-tag">#vanda223kişi</div>
+          <div class="trend-posts">5,889 posts</div>
+          <div class="trend-more"><i class="fas fa-ellipsis-h"></i></div>
+        </div>
+        <div class="show-more">Show more</div>
+      </div>
+
+      <div class="who-to-follow">
+        <h2>Who to follow</h2>
+        <div class="follow-item">
+          <img src="" alt="İlber Ortaylı" class="avatar" />
+          <div class="follow-info">
+            <div class="follow-name">İlber Ortaylı <i class="fas fa-check-circle verified"></i></div>
+            <div class="follow-username">@ILBERORTAYLIGSU</div>
+          </div>
+          <button class="follow-button">Follow</button>
+        </div>
+        
+        <div class="follow-item">
+          <img src="" alt="Prof. Dr. Naci Görür" class="avatar" />
+          <div class="follow-info">
+            <div class="follow-name">Prof. Dr. Naci Görür <i class="fas fa-check-circle verified"></i></div>
+            <div class="follow-username">@nacigorur</div>
+          </div>
+          <button class="follow-button">Follow</button>
+        </div>
+        
+        <div class="follow-item">
+          <img src="" alt="AFAD Deprem" class="avatar" />
+          <div class="follow-info">
+            <div class="follow-name">AFAD Deprem <i class="fas fa-check-circle verified"></i></div>
+            <div class="follow-username">@DepremDairesi</div>
+          </div>
+          <button class="follow-button">Follow</button>
+        </div>
+        
+        <div class="show-more">Show more</div>
+      </div>
+      
+      <div class="footer">
+        <div class="footer-links">
+          <a href="#">Terms of Service</a>
+          <a href="#">Privacy Policy</a>
+          <a href="#">Cookie Policy</a>
+          <a href="#">Imprint</a>
+          <a href="#">Accessibility</a>
+          <a href="#">Ads Info</a>
+          <a href="#">More ...</a>
+        </div>
+        <div class="footer-copyright">© 2023 X Corp.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tweet-modal" id="tweetModal">
+    <div class="tweet-modal-content">
+      <div class="tweet-modal-header">
+        <button class="close-modal"><i class="fas fa-times"></i></button>
+        <div class="drafts-button">Drafts</div>
+      </div>
+      <div class="tweet-modal-body">
+        <div class="tweet-modal-user">
+          <img src="" alt="User Avatar" class="avatar" />
+          <div class="tweet-modal-input">
+            <textarea placeholder="What's happening?" id="modalTweetInput"></textarea>
+          </div>
+        </div>
+        <div class="tweet-modal-privacy">
+          <i class="fas fa-globe-americas"></i> Everyone can reply
+        </div>
+        <div class="tweet-modal-actions">
+          <div class="tweet-modal-icons">
+            <i class="far fa-image"></i>
+            <i class="fas fa-film"></i>
+            <i class="far fa-chart-bar"></i>
+            <i class="far fa-smile"></i>
+            <i class="far fa-calendar"></i>
+            <i class="fas fa-map-marker-alt"></i>
+          </div>
+          <button class="tweet-modal-post-btn" id="modalPostButton">Post</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

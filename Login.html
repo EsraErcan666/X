@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>X Clone - Login</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="login.css">
+</head>
+<body>
+  <div class="main-container">
+    <!-- Sol taraf - Logo -->
+    <div class="left-section">
+      <img src="images/logo.png" alt="X Logo" class="main-logo">
+    </div>
+    
+    <!-- Sağ taraf - Giriş formu -->
+    <div class="right-section">
+      <div class="content-wrapper">
+        <h1 class="main-title">Şu anda olup bitenler</h1>
+        <h2 class="sub-title">Hemen katıl.</h2>
+        
+        <!-- Google ile kaydol -->
+        <button class="social-button google-button">
+          <svg class="google-icon" viewBox="0 0 24 24" width="20" height="20">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          Google ile kaydol
+        </button>
+        
+        <!-- Apple ile kaydol -->
+        <button class="social-button apple-button">
+          <svg class="apple-icon" viewBox="0 0 24 24" width="20" height="20">
+            <path fill="currentColor" d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+          </svg>
+          Apple ile kaydol
+        </button>
+        
+        <div class="divider">
+          <span>VEYA</span>
+        </div>
+        
+        <!-- Hesap oluştur butonu -->
+        <button class="create-account-button" id="signup-link">Hesap oluştur</button>
+        
+        <p class="terms-text">
+          By signing up, you agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>, including <a href="#">Cookie Use</a>.
+        </p>
+        
+        <div class="login-section">
+          <p class="login-text">Zaten bir hesabın var mı?</p>
+          <button class="login-button" id="login-button">Giriş yap</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Giriş Modal -->
+  <div class="modal-overlay" id="loginModal">
+    <div class="login-modal">
+      <div class="login-header">
+        <button class="close-button" id="closeLoginModal">
+          ✕
+        </button>
+        <div class="x-logo">
+          <svg viewBox="0 0 24 24" aria-hidden="true" class="x-icon">
+            <g><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></g>
+          </svg>
+        </div>
+      </div>
+      <div class="login-body">
+        
+        <div id="login-step1" class="login-step">
+          <h1 class="login-title">X'e giriş yap</h1>
+          
+          <!-- Google ile giriş -->
+          <button class="social-login-button google-login">
+            <svg class="google-icon" viewBox="0 0 24 24" width="20" height="20">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Google ile giriş yap
+          </button>
+          
+          <!-- Apple ile giriş -->
+          <button class="social-login-button apple-login">
+            <svg class="apple-icon" viewBox="0 0 24 24" width="20" height="20">
+              <path fill="currentColor" d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+            </svg>
+            Apple ile giriş yap
+          </button>
+          
+          <div class="login-divider">
+            <span>veya</span>
+          </div>
+          
+          <form class="login-form">
+            <div class="input-group">
+              <input type="text" id="username" placeholder="Telefon numarası, e-posta veya kullanıcı adı" required>
+            </div>
+            <button type="button" class="login-next-button" id="login-next">İleri</button>
+          </form>
+          
+          <div class="login-options">
+            <a href="#" class="forgot-password">Şifreni mi unuttun?</a>
+          </div>
+          
+          <div class="signup-link-section">
+            <span class="signup-text">Henüz bir hesabın yok mu? </span>
+            <a href="#" class="signup-link" id="signup-from-login">Kaydol</a>
+          </div>
+        </div>
+
+        <div id="login-step2" class="login-step" style="display: none;">
+          <button class="back-button" id="back-to-login-step1">
+            ←
+          </button>
+          <h1 class="login-title">Şifreni gir</h1>
+          
+          <div class="user-info">
+            <span class="user-email" id="user-email-display"></span>
+          </div>
+          
+          <form class="login-form">
+            <div class="input-group">
+              <div class="password-input-container">
+                <input type="password" id="login-password" placeholder="Şifre" required>
+                <button type="button" class="toggle-password" id="toggle-login-password">
+                  <i class="fa-solid fa-eye-slash"></i>
+                </button>
+              </div>
+            </div>
+            <button type="button" class="login-submit-button" id="login-submit">Giriş yap</button>
+          </form>
+          
+          <div class="login-options">
+            <a href="#" class="forgot-password">Şifreni mi unuttun?</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Kayıt Modalı -->
+  <div class="modal-overlay" id="signup-modal">
+    <div class="signup-modal">
+      <div class="signup-header">
+        <button class="close-button" id="close-modal">
+          ✕
+        </button>
+        <div class="x-logo">
+          <svg viewBox="0 0 24 24" aria-hidden="true" class="x-icon">
+            <g><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></g>
+          </svg>
+        </div>
+      </div>
+      <div class="signup-body">
+        <div id="step1" class="signup-step">
+          <h1 class="signup-title">Hesabını oluştur</h1>
+          <form class="signup-form">
+            <div class="input-group">
+              <input type="text" id="name-input" placeholder="İsim" required>
+              <span class="char-count">0 / 50</span>
+            </div>
+            <div class="input-group">
+              <input type="tel" id="phone-input" placeholder="Telefon" required>
+            </div>
+            <div class="email-option">
+              <a href="#" id="use-email">E-posta kullan</a>
+            </div>
+            <div class="birthdate-section">
+              <h3 class="birthdate-title">Doğum tarihi</h3>
+              <p class="birthdate-description">Bu, herkese açık olarak gösterilmeyecek. Bu hesap bir işletme, evcil hayvan veya başka bir şey için olsa bile kendi yaşını doğrulaman gerekir.</p>
+              <div class="birthdate-selects">
+                <select id="month">
+                  <option value="" disabled selected>Ay</option>
+                  <option value="1">Ocak</option>
+                  <option value="2">Şubat</option>
+                  <option value="3">Mart</option>
+                  <option value="4">Nisan</option>
+                  <option value="5">Mayıs</option>
+                  <option value="6">Haziran</option>
+                  <option value="7">Temmuz</option>
+                  <option value="8">Ağustos</option>
+                  <option value="9">Eylül</option>
+                  <option value="10">Ekim</option>
+                  <option value="11">Kasım</option>
+                  <option value="12">Aralık</option>
+                </select>
+                <select id="day">
+                  <option value="" disabled selected>Gün</option>
+                </select>
+                <select id="year">
+                  <option value="" disabled selected>Yıl</option>
+                </select>
+              </div>
+            </div>
+            <button type="button" class="signup-next-button" id="signup-next">İleri</button>
+          </form>
+        </div>
+
+        <div id="step2" class="signup-step" style="display: none;">
+          <button class="back-button" id="back-to-step1">
+            ←
+          </button>
+          <h1 class="signup-title">Şifreni oluştur</h1>
+          <form class="signup-form">
+            <div class="input-group">
+              <div class="password-input-container">
+                <input type="password" id="password-input" placeholder="Şifre" required>
+                <button type="button" class="toggle-password" id="toggle-password">
+                 <i class="fa-solid fa-eye-slash"></i>
+                </button>
+              </div>
+            </div>
+            <div class="password-requirements">
+              <p class="requirement" id="length-req">En az 8 karakter</p>
+              <p class="requirement" id="uppercase-req">En az 1 büyük harf</p>
+              <p class="requirement" id="lowercase-req">En az 1 küçük harf</p>
+              <p class="requirement" id="number-req">En az 1 rakam</p>
+            </div>
+            <button type="button" class="signup-complete-button" id="signup-complete" disabled>Hesap Oluştur</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const signupModal = document.getElementById('signup-modal');
+      const loginModal = document.getElementById('loginModal');
+      const signupLink = document.getElementById('signup-link');
+      const createAccountButton = document.getElementById('create-account-button');
+      const loginButton = document.getElementById('login-button');
+      const closeModal = document.getElementById('close-modal');
+      const closeLoginModal = document.getElementById('closeLoginModal');
+      const daySelect = document.getElementById('day');
+      const yearSelect = document.getElementById('year');
+      const nameInput = document.getElementById('name-input');
+      const charCount = document.querySelector('.char-count');
+      const useEmailLink = document.getElementById('use-email');
+      const phoneInput = document.getElementById('phone-input');
+      const emailInput = document.getElementById('phone-input'); 
+      const signupNextButton = document.getElementById('signup-next');
+      const step1 = document.getElementById('step1');
+      const step2 = document.getElementById('step2');
+      const backToStep1 = document.getElementById('back-to-step1');
+      const passwordInput = document.getElementById('password-input');
+      const togglePassword = document.getElementById('toggle-password');
+      const signupCompleteButton = document.getElementById('signup-complete');
+      
+      
+      if (daySelect && yearSelect) {
+        for (let i = 1; i <= 31; i++) {
+          const option = document.createElement('option');
+          option.value = i;
+          option.textContent = i;
+          daySelect.appendChild(option);
+        }
+        
+        const currentYear = new Date().getFullYear();
+        for (let i = currentYear; i >= currentYear - 100; i--) {
+          const option = document.createElement('option');
+          option.value = i;
+          option.textContent = i;
+          yearSelect.appendChild(option);
+        }
+      }
+      
+      
+      if (nameInput && charCount) {
+        nameInput.addEventListener('input', function() {
+          const length = this.value.length;
+          charCount.textContent = `${length} / 50`;
+          if (length > 50) {
+            this.value = this.value.substring(0, 50);
+            charCount.textContent = '50 / 50';
+          }
+        });
+      }
+      
+      
+      if (useEmailLink && phoneInput) {
+        useEmailLink.addEventListener('click', function(e) {
+          e.preventDefault();
+          if (phoneInput.type === 'tel') {
+            phoneInput.type = 'email';
+            phoneInput.placeholder = 'E-posta';
+            phoneInput.value = ''; 
+            this.textContent = 'Telefon kullan';
+          } else {
+            phoneInput.type = 'tel';
+            phoneInput.placeholder = 'Telefon';
+            phoneInput.value = '';
+            this.textContent = 'E-posta kullan';
+          }
+        });
+      }
+      
+      
+      if (phoneInput) {
+        phoneInput.addEventListener('input', function() {
+          if (this.type === 'tel') {
+            this.value = this.value.replace(/[^0-9]/g, '');
+           
+            if (this.value.length > 11) {
+              this.value = this.value.substring(0, 11);
+            }
+          }
+        });
+      }
+      
+      function showStep1() {
+        if (step1 && step2) {
+          step1.style.display = 'block';
+          step2.style.display = 'none';
+        }
+      }
+
+      function showStep2() {
+        if (step1 && step2) {
+          step1.style.display = 'none';
+          step2.style.display = 'block';
+        }
+      }
+      if (signupLink && signupModal) {
+        signupLink.addEventListener('click', function(e) {
+          e.preventDefault();
+          signupModal.classList.add('show');
+          showStep1();
+        });
+      }
+
+      if (createAccountButton && signupModal) {
+        createAccountButton.addEventListener('click', function(e) {
+          e.preventDefault();
+          signupModal.classList.add('show');
+          showStep1();
+        });
+      }
+
+      if (closeModal && signupModal) {
+        closeModal.addEventListener('click', function() {
+          signupModal.classList.remove('show');
+          showStep1();
+        });
+      }
+
+      if (closeLoginModal && loginModal) {
+        closeLoginModal.addEventListener('click', function() {
+          currentUserId = null; 
+          loginModal.classList.remove('show');
+          showLoginStep1(); 
+        });
+      }
+
+      if (signupModal) {
+        signupModal.addEventListener('click', function(e) {
+          if (e.target === signupModal) {
+            signupModal.classList.remove('show');
+            showStep1();
+          }
+        });
+      }
+
+      if (loginModal) {
+        loginModal.addEventListener('click', function(e) {
+          if (e.target === loginModal) {
+            currentUserId = null; 
+            loginModal.classList.remove('show');
+            showLoginStep1(); 
+          }
+        });
+      }
+      
+      const signupFromLogin = document.getElementById('signup-from-login');
+      if (signupFromLogin && loginModal && signupModal) {
+        signupFromLogin.addEventListener('click', function(e) {
+          e.preventDefault();
+          loginModal.classList.remove('show');
+          signupModal.classList.add('show');
+          showStep1();
+        });
+      }
+      const loginStep1 = document.getElementById('login-step1');
+      const loginStep2 = document.getElementById('login-step2');
+      const backToLoginStep1 = document.getElementById('back-to-login-step1');
+      const loginNextButton = document.getElementById('login-next');
+      const usernameInput = document.getElementById('username');
+      const loginPasswordInput = document.getElementById('login-password');
+      const toggleLoginPassword = document.getElementById('toggle-login-password');
+      const loginSubmitButton = document.getElementById('login-submit');
+      const userEmailDisplay = document.getElementById('user-email-display');
+
+      function showLoginStep1() {
+        if (loginStep1 && loginStep2) {
+          loginStep1.style.display = 'block';
+          loginStep2.style.display = 'none';
+        }
+      }
+
+      function showLoginStep2() {
+        if (loginStep1 && loginStep2) {
+          loginStep1.style.display = 'none';
+          loginStep2.style.display = 'block';
+          
+    
+          if (userEmailDisplay && usernameInput) {
+            userEmailDisplay.textContent = usernameInput.value;
+          }
+        }
+      }
+      let currentUserId = null; 
+      
+      if (loginNextButton && usernameInput) {
+        loginNextButton.addEventListener('click', async function() {
+          if (usernameInput.value.trim()) {
+            try {
+              const response = await fetch('http://localhost:3000/api/check-user', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  identifier: usernameInput.value
+                })
+              });
+              
+              const result = await response.json();
+              
+              if (result.success) {
+                currentUserId = result.user._id;
+                showLoginStep2();
+              } else {
+                alert('Hata: ' + result.message);
+              }
+            } catch (error) {
+              console.error('Kullanıcı kontrol hatası:', error);
+              alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+            }
+          } else {
+            alert('Lütfen kullanıcı adı, e-posta veya telefon numaranızı girin.');
+          }
+        });
+      }
+
+      if (backToLoginStep1) {
+        backToLoginStep1.addEventListener('click', function() {
+          currentUserId = null; 
+          showLoginStep1();
+        });
+      }
+
+      if (toggleLoginPassword && loginPasswordInput) {
+        toggleLoginPassword.addEventListener('click', function() {
+          if (loginPasswordInput.type === 'password') {
+            loginPasswordInput.type = 'text';
+            this.innerHTML = '<i class="fa-solid fa-eye"></i>';
+
+          } else {
+            loginPasswordInput.type = 'password';
+            this.innerHTML = '<i class="fa-solid fa-eye-slash"></i>';
+          }
+        });
+      }
+
+       if (loginSubmitButton && loginPasswordInput) {
+         loginSubmitButton.addEventListener('click', async function() {
+           if (loginPasswordInput.value.trim()) {
+             if (!currentUserId) {
+               alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+               showLoginStep1();
+               return;
+             }
+             
+             try {
+               const response = await fetch('http://localhost:3000/api/login', {
+                 method: 'POST',
+                 headers: {
+                   'Content-Type': 'application/json'
+                 },
+                 body: JSON.stringify({
+                   userId: currentUserId,
+                   password: loginPasswordInput.value
+                 })
+               });
+               
+               const result = await response.json();
+               
+               if (result.success) {
+                 alert('Giriş işlemi başarılı! Ana sayfaya yönlendiriliyorsunuz...');
+                 loginModal.classList.remove('show');
+                 showLoginStep1(); 
+                 currentUserId = null; 
+                 
+                 localStorage.setItem('user', JSON.stringify(result.user));
+                 
+                 setTimeout(function() {
+                   window.location.href = 'index.html';
+                 }, 1500);
+               } else {
+                 alert('Hata: ' + result.message);
+               }
+             } catch (error) {
+               console.error('Giriş hatası:', error);
+               alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+             }
+           } else {
+             alert('Lütfen şifrenizi girin.');
+           }
+         });
+       }
+
+      if (loginButton && loginModal) {
+        loginButton.addEventListener('click', function(e) {
+          e.preventDefault();
+          loginModal.classList.add('show');
+          showLoginStep1();
+        });
+      }
+      
+      if (backToStep1) {
+        backToStep1.addEventListener('click', showStep1);
+      }
+
+      function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+      }
+
+      function isValidPhone(phone) {
+        const phoneRegex = /^[0-9]{10,11}$/;
+        return phoneRegex.test(phone);
+      }
+
+      if (signupNextButton) {
+        signupNextButton.addEventListener('click', async function() {
+          if (!nameInput || !nameInput.value.trim()) {
+            alert('Lütfen kullanıcı adınızı girin.');
+            return;
+          }
+          
+          if (nameInput.value.trim().length < 3 || nameInput.value.trim().length > 20) {
+            alert('Kullanıcı adı 3-20 karakter arasında olmalıdır.');
+            return;
+          }
+          
+          try {
+            const usernameResponse = await fetch('http://localhost:3000/api/check-username', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ username: nameInput.value.trim() })
+            });
+            
+            const usernameResult = await usernameResponse.json();
+            
+            if (!usernameResult.success) {
+              alert(usernameResult.message);
+              return;
+            }
+          } catch (error) {
+            console.error('Kullanıcı adı kontrol hatası:', error);
+            alert('Kullanıcı adı kontrolü yapılırken bir hata oluştu. Lütfen tekrar deneyin.');
+            return;
+          }
+          
+          if (!phoneInput || !phoneInput.value.trim()) {
+            if (phoneInput.type === 'email') {
+              alert('Lütfen e-posta adresinizi girin.');
+            } else {
+              alert('Lütfen telefon numaranızı girin.');
+            }
+            return;
+          }
+          
+          if (phoneInput.type === 'email') {
+            if (!isValidEmail(phoneInput.value.trim())) {
+              alert('Lütfen geçerli bir e-posta adresi girin.');
+              return;
+            }
+          } else {
+            if (!isValidPhone(phoneInput.value.trim())) {
+              alert('Telefon numarası 10-11 haneli olmalıdır ve sadece rakam içermelidir.');
+              return;
+            }
+          }
+          
+          showStep2();
+        });
+      }
+      if (togglePassword && passwordInput) {
+        togglePassword.addEventListener('click', function() {
+          if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            this.textContent = '<i class="fa-solid fa-eye"></i>';
+          } else {
+            passwordInput.type = 'password';
+            this.textContent = '<i class="fa-solid fa-eye-slash"></i>';
+          }
+        });
+      }
+
+      if (passwordInput) {
+        passwordInput.addEventListener('input', function() {
+          const password = this.value;
+          const lengthReq = document.getElementById('length-req');
+          const uppercaseReq = document.getElementById('uppercase-req');
+          const lowercaseReq = document.getElementById('lowercase-req');
+          const numberReq = document.getElementById('number-req');
+          
+          let isValid = true;
+          
+          if (password.length >= 8) {
+            lengthReq.classList.add('valid');
+          } else {
+            lengthReq.classList.remove('valid');
+            isValid = false;
+          }
+          
+          if (/[A-Z]/.test(password)) {
+            uppercaseReq.classList.add('valid');
+          } else {
+            uppercaseReq.classList.remove('valid');
+            isValid = false;
+          }
+          
+          if (/[a-z]/.test(password)) {
+            lowercaseReq.classList.add('valid');
+          } else {
+            lowercaseReq.classList.remove('valid');
+            isValid = false;
+          }
+          
+          if (/[0-9]/.test(password)) {
+            numberReq.classList.add('valid');
+          } else {
+            numberReq.classList.remove('valid');
+            isValid = false;
+          }
+          if (signupCompleteButton) {
+            signupCompleteButton.disabled = !isValid;
+          }
+        });
+      }
+
+       if (signupCompleteButton) {
+         signupCompleteButton.addEventListener('click', async function() {
+           const password = passwordInput.value;
+           
+           if (password.trim() === '') {
+             alert('Lütfen şifrenizi girin.');
+             return;
+           }
+          
+            const formData = {
+              username: nameInput.value,
+              password: password,
+              birth_date: `${document.getElementById('year').value}-${document.getElementById('month').value.padStart(2, '0')}-${document.getElementById('day').value.padStart(2, '0')}`
+            };
+            
+            if (phoneInput.type === 'email') {
+              formData.email = phoneInput.value;
+              formData.phone = ''; 
+            } else {
+              formData.phone = phoneInput.value;
+              formData.email = ''; 
+            }
+           
+           try {
+             const response = await fetch('http://localhost:3000/api/register', {
+               method: 'POST',
+               headers: {
+                 'Content-Type': 'application/json'
+               },
+               body: JSON.stringify(formData)
+             });
+             
+             const result = await response.json();
+             
+             if (result.success) {
+               alert('Hesap başarıyla oluşturuldu! Ana sayfaya yönlendiriliyorsunuz...');
+               
+               
+               signupModal.classList.remove('show');
+               showStep1();
+               
+               
+               setTimeout(function() {
+                 window.location.href = 'index.html';
+               }, 1500);
+             } else {
+               alert('Hata: ' + result.message);
+             }
+           } catch (error) {
+             console.error('Kayıt hatası:', error);
+             alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+           }
+         });
+       }
+    });
+    
+    function login() {
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      
+      if (username && password) {
+        window.location.href = 'index.html';
+      } else {
+        alert('Lütfen kullanıcı adı ve şifre girin.');
+      }
+    }
+  </script>
+</body>
+</html>
