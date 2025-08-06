@@ -110,13 +110,14 @@ app.post('/api/register', async (req, res) => {
       });
     }
 
-    if (!email && !phone) {
+    if ((!email || email.trim() === '') && (!phone || phone.trim() === '')) {
       return res.status(400).json({ 
         success: false, 
         message: 'E-posta veya telefon numarası gereklidir' 
       });
     }
 
+    // Email ve phone kontrollerini sadece değer varsa yap
     if (email && email.trim() !== '' && !isValidEmail(email)) {
       return res.status(400).json({ 
         success: false, 
@@ -130,12 +131,14 @@ app.post('/api/register', async (req, res) => {
         message: 'Telefon numarası 10-11 haneli olmalıdır' 
       });
     }
+    
+    // Mevcut kullanıcı kontrolü
     const orConditions = [{ username }];
     if (email && email.trim() !== '') {
-      orConditions.push({ email });
+      orConditions.push({ email: email.trim() });
     }
     if (phone && phone.trim() !== '') {
-      orConditions.push({ phone });
+      orConditions.push({ phone: phone.trim() });
     }
 
     const existingUser = await User.findOne({
@@ -169,10 +172,10 @@ app.post('/api/register', async (req, res) => {
 
     const newUser = new User({
       username,
-      email: email && email.trim() !== '' ? email : null,
+      email: email && email.trim() !== '' ? email.trim() : undefined,
       password: hashedPassword,
       birth_date: new Date(birth_date),
-      phone: phone && phone.trim() !== '' ? phone : null
+      phone: phone && phone.trim() !== '' ? phone.trim() : undefined
     });
 
     await newUser.save();

@@ -668,10 +668,10 @@
             
             if (phoneInput.type === 'email') {
               formData.email = phoneInput.value;
-              formData.phone = ''; 
+              // phone alanını hiç göndermiyoruz
             } else {
               formData.phone = phoneInput.value;
-              formData.email = ''; 
+              // email alanını hiç göndermiyoruz
             }
            
            try {
