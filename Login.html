@@ -600,10 +600,10 @@
         togglePassword.addEventListener('click', function() {
           if (passwordInput.type === 'password') {
             passwordInput.type = 'text';
-            this.textContent = '<i class="fa-solid fa-eye"></i>';
+            this.innerHTML = '<i class="fa-solid fa-eye"></i>';
           } else {
             passwordInput.type = 'password';
-            this.textContent = '<i class="fa-solid fa-eye-slash"></i>';
+            this.innerHTML = '<i class="fa-solid fa-eye-slash"></i>';
           }
         });
       }

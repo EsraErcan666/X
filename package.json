@@ -8,16 +8,21 @@
     "dev": "nodemon server.js"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "mongoose": "^7.5.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
-    "dotenv": "^16.3.1"
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "mongoose": "^7.5.0",
+    "multer": "^1.4.5-lts.1"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
   },
-  "keywords": ["social-media", "x-clone", "twitter-clone"],
+  "keywords": [
+    "social-media",
+    "x-clone",
+    "twitter-clone"
+  ],
   "author": "Your Name",
   "license": "MIT"
 }

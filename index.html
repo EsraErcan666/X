@@ -35,7 +35,7 @@
           <img src="" alt="Profile" class="profile-avatar">
           <div class="profile-details">
             <span class="profile-name">Esra Ercan</span>
-            <span class="profile-username">@Ciklet666</span>
+            <span class="profile-username">@</span>
           </div>
           <div class="profile-menu">
             <i class="fas fa-ellipsis-h"></i>
@@ -45,7 +45,7 @@
               </div>
               <div class="dropdown-item logout-item">
                 <i class="fas fa-sign-out-alt"></i>
-                <span>Log out @Ciklet666</span>
+                <span>Log out </span>
               </div>
             </div>
           </div>
@@ -54,94 +54,305 @@
     </div>
 
     <div class="content">
-      <div class="tabs">
-        <div class="tab active">For you</div>
-        <div class="tab">Following</div>
-      </div>
-
-      <div class="tweet-box">
-        <textarea id="tweetInput" placeholder="What's happening?" maxlength="280"></textarea>
-        <div class="tweet-actions">
-          <div class="tweet-icons">
-            <i class="far fa-image"></i>
-            <i class="fas fa-film"></i>
-            <i class="far fa-chart-bar"></i>
-            <i class="far fa-smile"></i>
-            <i class="far fa-calendar"></i>
-            <i class="fas fa-map-marker-alt"></i>
-          </div>
-          <button onclick="postTweet()">Post</button>
+      <!-- Home Content -->
+      <div id="homeContent" class="content-section active">
+        <div class="tabs">
+          <div class="tab active">For you</div>
+          <div class="tab">Following</div>
         </div>
-      </div>
 
-      <div class="show-posts">Show 105 posts</div>
-
-      <div class="earn-banner">
-        <div class="earn-content">
-          <h2>Earn on X</h2>
-          <p>If eligible, you can receive a share of ads revenue just by posting on X. You must be subscribed to X Premium.</p>
-          <button class="subscribe-button">Subscribe today</button>
-        </div>
-      </div>
-
-      <div class="premium-post">
-        <div class="post-header">
-          <img src="" alt="X Premium" class="avatar" />
-          <div class="post-info">
-            <span class="name">Premium <i class="fas fa-check-circle"></i></span>
-            <span class="username">@premium</span>
-          </div>
-          <div class="post-ad">Ad</div>
-        </div>
-        <div class="post-content">
-          <p>Posting great content on X?</p>
-          <p>Subscribe to Premium to join our revenue share program.</p>
-        </div>
-        <div class="premium-banner">
-          <img src="" alt="X Premium Banner" />
-        </div>
-      </div>
-
-      <section id="tweetList">
-        <!-- Tweet'ler burada gösterilecek -->
-      </section>
-      
-      <!-- Tweet Template -->
-      <template id="tweetTemplate">
-        <div class="tweet">
-          <div class="post-header">
-            <img src="" alt="" class="avatar" />
-            <div class="post-info">
-              <span class="name"></span>
-              <span class="username"></span>
+        <div class="tweet-box">
+          <textarea id="tweetInput" placeholder="What's happening?" maxlength="280"></textarea>
+          <div class="tweet-actions">
+            <div class="tweet-icons">
+              <i class="far fa-image"></i>
+              <i class="fas fa-film"></i>
+              <i class="far fa-chart-bar"></i>
+              <i class="far fa-smile"></i>
+              <i class="far fa-calendar"></i>
+              <i class="fas fa-map-marker-alt"></i>
             </div>
-            <div class="tweet-more"><i class="fas fa-ellipsis-h"></i></div>
+            <button onclick="postTweet()">Post</button>
+          </div>
+        </div>
+
+        <div class="show-posts">Show 105 posts</div>
+
+        <div class="earn-banner">
+          <div class="earn-content">
+            <h2>Earn on X</h2>
+            <p>If eligible, you can receive a share of ads revenue just by posting on X. You must be subscribed to X Premium.</p>
+            <button class="subscribe-button">Subscribe today</button>
+          </div>
+        </div>
+
+        <div class="premium-post">
+          <div class="post-header">
+            <img src="" alt="X Premium" class="avatar" />
+            <div class="post-info">
+              <span class="name">Premium <i class="fas fa-check-circle"></i></span>
+              <span class="username">@premium</span>
+            </div>
+            <div class="post-ad">Ad</div>
           </div>
           <div class="post-content">
-            <p></p>
+            <p>Posting great content on X?</p>
+            <p>Subscribe to Premium to join our revenue share program.</p>
           </div>
-          <div class="tweet-image" style="display: none;">
-            <img src="" alt="Tweet image" />
-          </div>
-          <div class="tweet-actions">
-            <div class="tweet-action comment-action">
-              <i class="far fa-comment"></i> <span class="comment-count">0</span>
-            </div>
-            <div class="tweet-action retweet-action">
-              <i class="fas fa-retweet"></i> <span class="retweet-count">0</span>
-            </div>
-            <div class="tweet-action like-action">
-              <i class="far fa-heart"></i> <span class="like-count">0</span>
-            </div>
-            <div class="tweet-action">
-              <i class="fas fa-chart-bar"></i> <span class="view-count">0</span>
-            </div>
-            <div class="tweet-action">
-              <i class="fas fa-share-alt"></i>
-            </div>
+          <div class="premium-banner">
+            <img src="" alt="X Premium Banner" />
           </div>
         </div>
-      </template>
+
+        <section id="tweetList">
+          <!-- Tweet'ler burada gösterilecek -->
+        </section>
+        
+        <!-- Tweet Template -->
+        <template id="tweetTemplate">
+          <div class="tweet">
+            <div class="post-header">
+              <img src="" alt="" class="avatar" />
+              <div class="post-info">
+                <span class="name"></span>
+                <span class="username"></span>
+              </div>
+              <div class="tweet-more"><i class="fas fa-ellipsis-h"></i></div>
+            </div>
+            <div class="post-content">
+              <p></p>
+            </div>
+            <div class="tweet-image" style="display: none;">
+              <img src="" alt="Tweet image" />
+            </div>
+            <div class="tweet-actions">
+              <div class="tweet-action comment-action">
+                <i class="far fa-comment"></i> <span class="comment-count">0</span>
+              </div>
+              <div class="tweet-action retweet-action">
+                <i class="fas fa-retweet"></i> <span class="retweet-count">0</span>
+              </div>
+              <div class="tweet-action like-action">
+                <i class="far fa-heart"></i> <span class="like-count">0</span>
+              </div>
+              <div class="tweet-action">
+                <i class="fas fa-chart-bar"></i> <span class="view-count">0</span>
+              </div>
+              <div class="tweet-action">
+                <i class="fas fa-share-alt"></i>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <!-- Profile Template -->
+        <template id="profileTemplate">
+          <div class="profile-header">
+            <div class="profile-nav">
+              <button class="back-button">
+                <i class="fas fa-arrow-left"></i>
+              </button>
+              <div class="profile-title">
+                <h2>Esra Ercan</h2>
+                <span class="posts-count">0 posts</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="profile-banner">
+            <div class="banner-image"></div>
+            <div class="profile-info-section">
+              <div class="profile-avatar-large">
+                <img src="" alt="Profile" />
+              </div>
+              <div class="profile-actions">
+                <button class="edit-profile-btn">Edit profile</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="profile-details">
+            <div class="profile-name-section">
+              <h1>Esra Ercan</h1>
+              <span class="profile-handle"> </span>
+            </div>
+            
+            <div class="profile-meta">
+              <div class="join-date">
+                <i class="far fa-calendar"></i>
+                <span>Joined October 2024</span>
+              </div>
+            </div>
+
+            <div class="profile-stats">
+              <div class="stat">
+                <span class="stat-number">0</span>
+                <span class="stat-label">Following</span>
+              </div>
+              <div class="stat">
+                <span class="stat-number">0</span>
+                <span class="stat-label">Followers</span>
+              </div>
+            </div>
+
+            <div class="verification-notice">
+              <div class="verification-content">
+                <i class="fas fa-check-circle verification-icon"></i>
+                <div class="verification-text">
+                  <h3>You aren't verified yet</h3>
+                  <p>Get verified for boosted replies, analytics, ad-free browsing, and more. Upgrade your profile now.</p>
+                  <button class="get-verified-btn">Get verified</button>
+                </div>
+                <button class="close-verification">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="profile-tabs">
+            <div class="profile-tab active">Posts</div>
+            <div class="profile-tab">Replies</div>
+            <div class="profile-tab">Highlights</div>
+            <div class="profile-tab">Articles</div>
+            <div class="profile-tab">Media</div>
+            <div class="profile-tab">Likes</div>
+          </div>
+
+          <div class="profile-content">
+            <div class="no-posts">
+              <div class="no-posts-content">
+                <h2>You haven't posted anything yet</h2>
+                <p>When you post, your posts will show up here.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="who-to-follow-section">
+            <h2>Who to follow</h2>
+            <div class="follow-item">
+              <img src="" alt="İlber Ortaylı" class="avatar" />
+              <div class="follow-info">
+                <div class="follow-name">İlber Ortaylı <i class="fas fa-check-circle verified"></i></div>
+                <div class="follow-username">@ILBERORTAYLIGSU</div>
+              </div>
+              <button class="follow-button">Follow</button>
+            </div>
+            
+            <div class="follow-item">
+              <img src="" alt="Prof. Dr. Naci Görür" class="avatar" />
+              <div class="follow-info">
+                <div class="follow-name">Prof. Dr. Naci Görür <i class="fas fa-check-circle verified"></i></div>
+                <div class="follow-username">@nacigorur</div>
+              </div>
+              <button class="follow-button">Follow</button>
+            </div>
+            
+            <div class="follow-item">
+              <img src="" alt="AFAD Deprem" class="avatar" />
+              <div class="follow-info">
+                <div class="follow-name">AFAD Deprem <i class="fas fa-check-circle verified"></i></div>
+                <div class="follow-username">@DepremDairesi</div>
+              </div>
+              <button class="follow-button">Follow</button>
+            </div>
+            
+            <div class="show-more">Show more</div>
+          </div>
+
+          <!-- Edit Profile Modal -->
+          <div class="edit-profile-modal" id="editProfileModal">
+            <div class="edit-profile-modal-content">
+              <div class="edit-profile-header">
+                <button class="close-edit-profile" id="closeEditProfile">
+                  <i class="fas fa-times"></i>
+                </button>
+                <h1>Edit profile</h1>
+                <button class="save-profile-btn" id="saveProfile">Save</button>
+              </div>
+              
+              <div class="edit-profile-body">
+                <!-- Banner Section -->
+                <div class="banner-edit-section">
+                  <div class="current-banner" id="currentBanner">
+                    <!-- Current banner ya da  placeholder -->
+                  </div>
+                  <div class="banner-edit-overlay">
+                    <button class="edit-banner-btn" id="editBannerBtn">
+                      <i class="fas fa-camera"></i>
+                    </button>
+                    <input type="file" id="bannerUpload" accept="image/*" style="display: none;">
+                  </div>
+                </div>
+
+                <!-- Avatar Section -->
+                <div class="avatar-edit-section">
+                  <div class="current-avatar" id="currentAvatar">
+                    <img src="" id="avatarPreview" />
+                  </div>
+                  <button class="edit-avatar-btn" id="editAvatarBtn">
+                    <i class="fas fa-camera"></i>
+                  </button>
+                  <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
+                </div>
+
+              
+                <div class="profile-form">
+                  <div class="form-group">
+                    <label for="editName">Name</label>
+                    <input type="text" id="editName" value="Esra Ercan" maxlength="50">
+                    <span class="char-counter">9 / 50</span>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="editBio">Bio</label>
+                    <textarea id="editBio" placeholder="Bio" maxlength="160" rows="3"></textarea>
+                    <span class="char-counter">0 / 160</span>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="editLocation">Location</label>
+                    <input type="text" id="editLocation" placeholder="Location" maxlength="30">
+                    <span class="char-counter">0 / 30</span>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="editWebsite">Website</label>
+                    <input type="url" id="editWebsite" placeholder="Website" maxlength="100">
+                    <span class="char-counter">0 / 100</span>
+                  </div>
+
+                  <div class="form-group birth-date-group">
+                    <label>Birth date</label>
+                    <div class="birth-date-display">
+                      <span>October 16, 2003</span>
+                      <button class="edit-birth-btn">
+                        <i class="fas fa-chevron-right"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="additional-options">
+                    <div class="option-item">
+                      <span>Create expanded bio</span>
+                      <i class="fas fa-chevron-right"></i>
+                    </div>
+                    <div class="option-item">
+                      <span>Switch to professional</span>
+                      <i class="fas fa-chevron-right"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- Profile Content buraya gelcekk -->
+      <div id="profileContent" class="content-section">
+        <!--  -->
+      </div>
     </div>
 
 

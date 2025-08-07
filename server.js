@@ -2,6 +2,9 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
@@ -16,6 +19,48 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.static('.'));
+
+// Uploads klasörünü oluştur
+const uploadsDir = path.join(__dirname, 'uploads');
+const imagesDir = path.join(__dirname, 'images');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+if (!fs.existsSync(imagesDir)) {
+  fs.mkdirSync(imagesDir, { recursive: true });
+}
+
+// Multer konfigürasyonu
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|gif/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Sadece resim dosyaları yüklenebilir!'));
+    }
+  }
+});
+
+// Uploads klasörünü statik olarak servis et
+app.use('/uploads', express.static('uploads'));
 
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/xclone', {
   useNewUrlParser: true,
@@ -69,7 +114,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: false,
     unique: true,
-    sparse: true, // Boş değerler için unique kontrolü yapmaz
+    sparse: true, 
     trim: true,
     validate: {
       validator: function(v) {
@@ -78,6 +123,36 @@ const userSchema = new mongoose.Schema({
       },
       message: 'Telefon numarası 10-11 haneli olmalıdır'
     }
+  },
+  displayName: {
+    type: String,
+    maxlength: 50,
+    default: function() {
+      return this.username;
+    }
+  },
+  bio: {
+    type: String,
+    maxlength: 160,
+    default: ''
+  },
+  location: {
+    type: String,
+    maxlength: 30,
+    default: ''
+  },
+  website: {
+    type: String,
+    maxlength: 100,
+    default: ''
+  },
+  profileImage: {
+    type: String,
+    default: ''
+  },
+  bannerImage: {
+    type: String,
+    default: ''
   },
   created_at: {
     type: Date,
@@ -335,6 +410,131 @@ app.post('/api/login', async (req, res) => {
     res.status(500).json({ 
       success: false, 
       message: 'Sunucu hatası' 
+    });
+  }
+});
+
+// Profil güncelleme endpointi
+app.put('/api/user/:userId', upload.fields([
+  { name: 'profileImage', maxCount: 1 },
+  { name: 'bannerImage', maxCount: 1 }
+]), async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { displayName, bio, location, website } = req.body;
+
+    // Kullanıcıyı bul
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Kullanıcı bulunamadı'
+      });
+    }
+
+    // Güncellenecek veriler
+    const updateData = {};
+
+    if (displayName !== undefined) updateData.displayName = displayName;
+    if (bio !== undefined) updateData.bio = bio;
+    if (location !== undefined) updateData.location = location;
+    if (website !== undefined) updateData.website = website;
+
+    // Profil resmi yüklendiyse
+    if (req.files && req.files.profileImage) {
+      // Eski profil resmini sil
+      if (user.profileImage) {
+        const oldImagePath = path.join(__dirname, user.profileImage);
+        if (fs.existsSync(oldImagePath)) {
+          fs.unlinkSync(oldImagePath);
+        }
+      }
+      updateData.profileImage = '/uploads/' + req.files.profileImage[0].filename;
+    }
+
+    // Banner resmi yüklendiyse
+    if (req.files && req.files.bannerImage) {
+      // Eski banner resmini sil
+      if (user.bannerImage) {
+        const oldBannerPath = path.join(__dirname, user.bannerImage);
+        if (fs.existsSync(oldBannerPath)) {
+          fs.unlinkSync(oldBannerPath);
+        }
+      }
+      updateData.bannerImage = '/uploads/' + req.files.bannerImage[0].filename;
+    }
+
+    // Kullanıcıyı güncelle
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      updateData,
+      { new: true, runValidators: true }
+    );
+
+    res.json({
+      success: true,
+      message: 'Profil başarıyla güncellendi',
+      user: {
+        _id: updatedUser._id,
+        username: updatedUser.username,
+        displayName: updatedUser.displayName,
+        bio: updatedUser.bio,
+        location: updatedUser.location,
+        website: updatedUser.website,
+        profileImage: updatedUser.profileImage,
+        bannerImage: updatedUser.bannerImage,
+        email: updatedUser.email,
+        birth_date: updatedUser.birth_date,
+        phone: updatedUser.phone,
+        created_at: updatedUser.created_at
+      }
+    });
+
+  } catch (error) {
+    console.error('Profil güncelleme hatası:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Sunucu hatası'
+    });
+  }
+});
+
+// Kullanıcı bilgilerini getirme endpointi
+app.get('/api/user/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await User.findById(userId).select('-password');
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Kullanıcı bulunamadı'
+      });
+    }
+
+    res.json({
+      success: true,
+      user: {
+        _id: user._id,
+        username: user.username,
+        displayName: user.displayName,
+        bio: user.bio,
+        location: user.location,
+        website: user.website,
+        profileImage: user.profileImage,
+        bannerImage: user.bannerImage,
+        email: user.email,
+        birth_date: user.birth_date,
+        phone: user.phone,
+        created_at: user.created_at
+      }
+    });
+
+  } catch (error) {
+    console.error('Kullanıcı bilgileri getirme hatası:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Sunucu hatası'
     });
   }
 });
