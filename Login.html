@@ -688,6 +688,8 @@
              if (result.success) {
                alert('Hesap başarıyla oluşturuldu! Ana sayfaya yönlendiriliyorsunuz...');
                
+               // Yeni hesap bilgilerini localStorage'a kaydet
+               localStorage.setItem('user', JSON.stringify(result.user));
                
                signupModal.classList.remove('show');
                showStep1();

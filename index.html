@@ -62,17 +62,32 @@
         </div>
 
         <div class="tweet-box">
-          <textarea id="tweetInput" placeholder="What's happening?" maxlength="280"></textarea>
-          <div class="tweet-actions">
-            <div class="tweet-icons">
-              <i class="far fa-image"></i>
-              <i class="fas fa-film"></i>
-              <i class="far fa-chart-bar"></i>
-              <i class="far fa-smile"></i>
-              <i class="far fa-calendar"></i>
-              <i class="fas fa-map-marker-alt"></i>
+          <div class="tweet-box-input">
+            <textarea id="tweetInput" placeholder="What's happening?" maxlength="280"></textarea>
+            <input type="file" id="tweetImageInput" accept="image/*" style="display: none;">
+            <input type="file" id="tweetVideoInput" accept="video/*" style="display: none;">
+            <div id="imagePreview" style="display: none; margin: 10px 0; position: relative;">
+              <img id="previewImg" style="width: 100%; max-height: 200px; border-radius: 10px; display: block; object-fit: cover;">
+              <button type="button" onclick="removeImage()" style="position: absolute; top: 8px; right: 8px; background: rgba(0, 0, 0, 0.6); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px;">×</button>
             </div>
-            <button onclick="postTweet()">Post</button>
+            <div id="videoPreview" style="display: none; margin: 10px 0; position: relative;">
+              <video id="previewVideo" controls style="width: 100%; max-height: 200px; border-radius: 10px; display: block;">
+                <source id="videoSource" src="" type="">
+                Your browser does not support the video tag.
+              </video>
+              <button type="button" onclick="removeVideo()" style="position: absolute; top: 8px; right: 8px; background: rgba(0, 0, 0, 0.6); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px;">×</button>
+            </div>
+            <div class="tweet-actions">
+              <div class="tweet-icons">
+                <i class="far fa-image" onclick="selectImage()" style="cursor: pointer;"></i>
+                <i class="fas fa-film" onclick="selectVideo()" style="cursor: pointer;"></i>
+                <i class="far fa-chart-bar"></i>
+                <i class="far fa-smile"></i>
+                <i class="far fa-calendar"></i>
+                <i class="fas fa-map-marker-alt"></i>
+              </div>
+              <button onclick="postTweet()">Post</button>
+            </div>
           </div>
         </div>
 
@@ -85,25 +100,6 @@
             <button class="subscribe-button">Subscribe today</button>
           </div>
         </div>
-
-        <div class="premium-post">
-          <div class="post-header">
-            <img src="" alt="X Premium" class="avatar" />
-            <div class="post-info">
-              <span class="name">Premium <i class="fas fa-check-circle"></i></span>
-              <span class="username">@premium</span>
-            </div>
-            <div class="post-ad">Ad</div>
-          </div>
-          <div class="post-content">
-            <p>Posting great content on X?</p>
-            <p>Subscribe to Premium to join our revenue share program.</p>
-          </div>
-          <div class="premium-banner">
-            <img src="" alt="X Premium Banner" />
-          </div>
-        </div>
-
         <section id="tweetList">
           <!-- Tweet'ler burada gösterilecek -->
         </section>
@@ -117,13 +113,27 @@
                 <span class="name"></span>
                 <span class="username"></span>
               </div>
-              <div class="tweet-more"><i class="fas fa-ellipsis-h"></i></div>
+              <div class="tweet-more">
+                <i class="fas fa-ellipsis-h"></i>
+                <div class="tweet-dropdown">
+                  <div class="dropdown-item delete-tweet-item" data-action="delete">
+                    <i class="fas fa-trash"></i>
+                    <span>Delete</span>
+                  </div>
+                </div>
+              </div>
             </div>
             <div class="post-content">
               <p></p>
             </div>
             <div class="tweet-image" style="display: none;">
               <img src="" alt="Tweet image" />
+            </div>
+            <div class="tweet-video" style="display: none;">
+              <video controls style="width: 100%; max-height: 300px; border-radius: 10px;">
+                <source src="" type="">
+                Your browser does not support the video tag.
+              </video>
             </div>
             <div class="tweet-actions">
               <div class="tweet-action comment-action">
@@ -153,7 +163,7 @@
                 <i class="fas fa-arrow-left"></i>
               </button>
               <div class="profile-title">
-                <h2>Esra Ercan</h2>
+                <h2 class="profile-display-name">Loading...</h2>
                 <span class="posts-count">0 posts</span>
               </div>
             </div>
@@ -173,14 +183,14 @@
 
           <div class="profile-details">
             <div class="profile-name-section">
-              <h1>Esra Ercan</h1>
-              <span class="profile-handle"> </span>
+              <h1 class="profile-full-name">Loading...</h1>
+              <span class="profile-handle">@loading...</span>
             </div>
             
             <div class="profile-meta">
               <div class="join-date">
                 <i class="far fa-calendar"></i>
-                <span>Joined October 2024</span>
+                <span class="join-date-text">Loading...</span>
               </div>
             </div>
 
@@ -220,7 +230,10 @@
           </div>
 
           <div class="profile-content">
-            <div class="no-posts">
+            <div class="profile-tweets">
+              <!-- Kullanıcının tweet'leri buraya eklenecek -->
+            </div>
+            <div class="no-posts" style="display: none;">
               <div class="no-posts-content">
                 <h2>You haven't posted anything yet</h2>
                 <p>When you post, your posts will show up here.</p>
@@ -453,6 +466,19 @@
           <img src="" alt="User Avatar" class="avatar" />
           <div class="tweet-modal-input">
             <textarea placeholder="What's happening?" id="modalTweetInput"></textarea>
+            <input type="file" id="modalImageInput" accept="image/*" style="display: none;">
+            <input type="file" id="modalVideoInput" accept="video/*" style="display: none;">
+            <div id="modalImagePreview" style="display: none; margin: 10px 0; position: relative;">
+              <img id="modalPreviewImg" style="width: 100%; max-height: 200px; border-radius: 10px; display: block; object-fit: cover;">
+              <button type="button" onclick="removeModalImage()" style="position: absolute; top: 8px; right: 8px; background: rgba(0, 0, 0, 0.6); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px;">×</button>
+            </div>
+            <div id="modalVideoPreview" style="display: none; margin: 10px 0; position: relative;">
+              <video id="modalPreviewVideo" controls style="width: 100%; max-height: 200px; border-radius: 10px; display: block;">
+                <source id="modalVideoSource" src="" type="">
+                Your browser does not support the video tag.
+              </video>
+              <button type="button" onclick="removeModalVideo()" style="position: absolute; top: 8px; right: 8px; background: rgba(0, 0, 0, 0.6); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px;">×</button>
+            </div>
           </div>
         </div>
         <div class="tweet-modal-privacy">
@@ -460,14 +486,83 @@
         </div>
         <div class="tweet-modal-actions">
           <div class="tweet-modal-icons">
-            <i class="far fa-image"></i>
-            <i class="fas fa-film"></i>
+            <i class="far fa-image" onclick="selectModalImage()" style="cursor: pointer;"></i>
+            <i class="fas fa-film" onclick="selectModalVideo()" style="cursor: pointer;"></i>
             <i class="far fa-chart-bar"></i>
             <i class="far fa-smile"></i>
             <i class="far fa-calendar"></i>
             <i class="fas fa-map-marker-alt"></i>
           </div>
           <button class="tweet-modal-post-btn" id="modalPostButton">Post</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Yorum Modal -->
+  <div class="comment-modal" id="commentModal">
+    <div class="comment-modal-content">
+      <div class="comment-modal-header">
+        <button class="close-modal" onclick="closeCommentModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="comment-modal-body">
+        <!-- Orijinal Tweet -->
+        <div class="original-tweet">
+          <div class="tweet-user">
+            <img src="" alt="User Avatar" class="original-tweet-avatar" />
+            <div class="tweet-content">
+              <div class="tweet-header">
+                <span class="original-tweet-name"></span>
+                <span class="original-tweet-username"></span>
+              </div>
+              <p class="original-tweet-text"></p>
+              <div class="original-tweet-image" style="display: none;">
+                <img src="" alt="Tweet image" />
+              </div>
+              <span class="replying-to">Replying to <span class="reply-username"></span></span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Yorum Yazma Alanı -->
+        <div class="comment-input-area">
+          <div class="comment-user">
+            <img src="" alt="User Avatar" class="comment-avatar" />
+            <div class="comment-input">
+              <textarea placeholder="Post your reply" id="commentInput"></textarea>
+              <input type="file" id="commentImageInput" accept="image/*" style="display: none;">
+              <div id="commentImagePreview" style="display: none; margin: 10px 0; position: relative;">
+                <img id="commentPreviewImg" style="width: 100%; max-height: 200px; border-radius: 10px; display: block; object-fit: cover;">
+                <button type="button" onclick="removeCommentImage()" style="position: absolute; top: 8px; right: 8px; background: rgba(0, 0, 0, 0.6); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px;">×</button>
+              </div>
+            </div>
+          </div>
+          <div class="comment-actions">
+            <div class="comment-icons">
+              <i class="far fa-image" onclick="selectCommentImage()" style="cursor: pointer;"></i>
+              <i class="fas fa-film"></i>
+              <i class="far fa-chart-bar"></i>
+              <i class="far fa-smile"></i>
+              <i class="far fa-calendar"></i>
+              <i class="fas fa-map-marker-alt"></i>
+            </div>
+            <button class="comment-reply-btn" id="commentReplyButton" onclick="postComment()">Reply</button>
+          </div>
+        </div>
+        
+        <!-- Mevcut Yorumlar -->
+        <div class="comments-section">
+          <div class="comments-list" id="commentsList">
+            <!-- Yorumlar buraya dinamik olarak eklenecek -->
+          </div>
+          <div class="comments-loading" id="commentsLoading" style="display: none; text-align: center; padding: 20px; color: #71767b;">
+            <i class="fas fa-spinner fa-spin"></i> Yorumlar yükleniyor...
+          </div>
+          <div class="comments-empty" id="commentsEmpty" style="display: none; text-align: center; padding: 20px; color: #71767b;">
+            Bu tweet'e henüz yorum yapılmamış. İlk yorum yapan siz olun!
+          </div>
         </div>
       </div>
     </div>

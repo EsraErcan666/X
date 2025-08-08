@@ -44,17 +44,20 @@ const storage = multer.diskStorage({
 const upload = multer({ 
   storage: storage,
   limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB limit
+    fileSize: 50 * 1024 * 1024 // 50MB limit (video dosyaları için)
   },
   fileFilter: (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|gif/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
+    const allowedImageTypes = /jpeg|jpg|png|gif/;
+    const allowedVideoTypes = /mp4|avi|mov|wmv|flv|webm|mkv|m4v/;
+    const extname = path.extname(file.originalname).toLowerCase();
     
-    if (mimetype && extname) {
+    const isImage = allowedImageTypes.test(extname) && file.mimetype.startsWith('image/');
+    const isVideo = allowedVideoTypes.test(extname) && file.mimetype.startsWith('video/');
+    
+    if (isImage || isVideo) {
       return cb(null, true);
     } else {
-      cb(new Error('Sadece resim dosyaları yüklenebilir!'));
+      cb(new Error('Sadece resim ve video dosyaları yüklenebilir!'));
     }
   }
 });
@@ -162,6 +165,120 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', userSchema);
 
+// Tweet Şeması
+const tweetSchema = new mongoose.Schema({
+  content: {
+    type: String,
+    required: true,
+    maxlength: 280,
+    trim: true
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  image: {
+    type: String,
+    default: ''
+  },
+  video: {
+    type: String,
+    default: ''
+  },
+  likes: {
+    type: Number,
+    default: 0
+  },
+  retweets: {
+    type: Number,
+    default: 0
+  },
+  comments: {
+    type: Number,
+    default: 0
+  },
+  views: {
+    type: Number,
+    default: 0
+  },
+  likedBy: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  retweetedBy: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  created_at: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+const Tweet = mongoose.model('Tweet', tweetSchema);
+
+// Yorum şeması
+const commentSchema = new mongoose.Schema({
+  content: {
+    type: String,
+    required: true,
+    maxlength: 280,
+    trim: true
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  tweetId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Tweet',
+    required: true
+  },
+  image: {
+    type: String,
+    default: ''
+  },
+  likes: {
+    type: Number,
+    default: 0
+  },
+  likedBy: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  created_at: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+const Comment = mongoose.model('Comment', commentSchema);
+
+// Güvenlik fonksiyonları
+function sanitizeInput(input) {
+  if (typeof input !== 'string') return '';
+  
+  return input
+    .replace(/[<>]/g, '') // HTML tag karakterlerini kaldır
+    .replace(/javascript:/gi, '') // JavaScript protokolünü kaldır
+    .replace(/on\w+=/gi, '') // Event handler'ları kaldır
+    .trim()
+    .substring(0, 500); // Maksimum uzunluk limiti
+}
+
+function isValidUrl(url) {
+  if (!url || typeof url !== 'string') return false;
+  
+  try {
+    const urlObj = new URL(url.startsWith('http') ? url : 'https://' + url);
+    return ['http:', 'https:'].includes(urlObj.protocol);
+  } catch {
+    return false;
+  }
+}
+
 
 function isValidEmail(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -178,14 +295,19 @@ app.post('/api/register', async (req, res) => {
   try {
     const { username, email, password, birth_date, phone } = req.body;
 
-    if (!username || !password || !birth_date) {
+    // Girişleri güvenli hale getir
+    const sanitizedUsername = sanitizeInput(username);
+    const sanitizedEmail = email ? sanitizeInput(email) : '';
+    const sanitizedPhone = phone ? sanitizeInput(phone) : '';
+
+    if (!sanitizedUsername || !password || !birth_date) {
       return res.status(400).json({ 
         success: false, 
         message: 'Kullanıcı adı, şifre ve doğum tarihi zorunludur' 
       });
     }
 
-    if ((!email || email.trim() === '') && (!phone || phone.trim() === '')) {
+    if ((!sanitizedEmail || sanitizedEmail.trim() === '') && (!sanitizedPhone || sanitizedPhone.trim() === '')) {
       return res.status(400).json({ 
         success: false, 
         message: 'E-posta veya telefon numarası gereklidir' 
@@ -193,14 +315,14 @@ app.post('/api/register', async (req, res) => {
     }
 
     // Email ve phone kontrollerini sadece değer varsa yap
-    if (email && email.trim() !== '' && !isValidEmail(email)) {
+    if (sanitizedEmail && sanitizedEmail.trim() !== '' && !isValidEmail(sanitizedEmail)) {
       return res.status(400).json({ 
         success: false, 
         message: 'Geçerli bir e-posta adresi giriniz' 
       });
     }
 
-    if (phone && phone.trim() !== '' && !isValidPhone(phone)) {
+    if (sanitizedPhone && sanitizedPhone.trim() !== '' && !isValidPhone(sanitizedPhone)) {
       return res.status(400).json({ 
         success: false, 
         message: 'Telefon numarası 10-11 haneli olmalıdır' 
@@ -208,12 +330,12 @@ app.post('/api/register', async (req, res) => {
     }
     
     // Mevcut kullanıcı kontrolü
-    const orConditions = [{ username }];
-    if (email && email.trim() !== '') {
-      orConditions.push({ email: email.trim() });
+    const orConditions = [{ username: sanitizedUsername }];
+    if (sanitizedEmail && sanitizedEmail.trim() !== '') {
+      orConditions.push({ email: sanitizedEmail.trim() });
     }
-    if (phone && phone.trim() !== '') {
-      orConditions.push({ phone: phone.trim() });
+    if (sanitizedPhone && sanitizedPhone.trim() !== '') {
+      orConditions.push({ phone: sanitizedPhone.trim() });
     }
 
     const existingUser = await User.findOne({
@@ -221,19 +343,19 @@ app.post('/api/register', async (req, res) => {
     });
 
     if (existingUser) {
-      if (existingUser.username === username) {
+      if (existingUser.username === sanitizedUsername) {
         return res.status(400).json({ 
           success: false, 
           message: 'Bu kullanıcı adı zaten kullanılıyor' 
         });
       }
-      if (email && existingUser.email === email) {
+      if (sanitizedEmail && existingUser.email === sanitizedEmail) {
         return res.status(400).json({ 
           success: false, 
           message: 'Bu e-posta adresi zaten kullanılıyor' 
         });
       }
-      if (phone && existingUser.phone === phone) {
+      if (sanitizedPhone && existingUser.phone === sanitizedPhone) {
         return res.status(400).json({ 
           success: false, 
           message: 'Bu telefon numarası zaten kullanılıyor' 
@@ -246,11 +368,11 @@ app.post('/api/register', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     const newUser = new User({
-      username,
-      email: email && email.trim() !== '' ? email.trim() : undefined,
+      username: sanitizedUsername,
+      email: sanitizedEmail && sanitizedEmail.trim() !== '' ? sanitizedEmail.trim() : undefined,
       password: hashedPassword,
       birth_date: new Date(birth_date),
-      phone: phone && phone.trim() !== '' ? phone.trim() : undefined
+      phone: sanitizedPhone && sanitizedPhone.trim() !== '' ? sanitizedPhone.trim() : undefined
     });
 
     await newUser.save();
@@ -432,13 +554,32 @@ app.put('/api/user/:userId', upload.fields([
       });
     }
 
+    // Girişleri güvenli hale getir
+    const sanitizedDisplayName = sanitizeInput(displayName);
+    const sanitizedBio = sanitizeInput(bio);
+    const sanitizedLocation = sanitizeInput(location);
+    
+    // Website URL'ini kontrol et
+    let sanitizedWebsite = '';
+    if (website && website.trim() !== '') {
+      if (isValidUrl(website.trim())) {
+        sanitizedWebsite = website.trim();
+      } else {
+        return res.status(400).json({
+          success: false,
+          message: 'Geçersiz website URL\'si'
+        });
+      }
+    }
+
     // Güncellenecek veriler
     const updateData = {};
 
-    if (displayName !== undefined) updateData.displayName = displayName;
-    if (bio !== undefined) updateData.bio = bio;
-    if (location !== undefined) updateData.location = location;
-    if (website !== undefined) updateData.website = website;
+    // Bu alanlar her zaman güncellenir (boş olsa bile)
+    updateData.displayName = sanitizedDisplayName;
+    updateData.bio = sanitizedBio;
+    updateData.location = sanitizedLocation;
+    updateData.website = sanitizedWebsite;
 
     // Profil resmi yüklendiyse
     if (req.files && req.files.profileImage) {
@@ -532,6 +673,583 @@ app.get('/api/user/:userId', async (req, res) => {
 
   } catch (error) {
     console.error('Kullanıcı bilgileri getirme hatası:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Sunucu hatası'
+    });
+  }
+});
+
+// Tweet oluşturma endpointi
+app.post('/api/tweets', upload.fields([
+  { name: 'image', maxCount: 1 },
+  { name: 'video', maxCount: 1 }
+]), async (req, res) => {
+  try {
+    console.log('Tweet oluşturma isteği alındı');
+    console.log('req.body:', req.body);
+    console.log('req.files:', req.files);
+    
+    const { content, userId } = req.body;
+
+    if (!content || !userId) {
+      console.log('Eksik veriler - content:', content, 'userId:', userId);
+      return res.status(400).json({
+        success: false,
+        message: 'Content ve userId gerekli'
+      });
+    }
+
+    // İçeriği güvenli hale getir
+    const sanitizedContent = sanitizeInput(content);
+    if (!sanitizedContent || sanitizedContent.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Tweet içeriği geçersiz'
+      });
+    }
+
+    // Kullanıcının var olup olmadığını kontrol et
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Kullanıcı bulunamadı'
+      });
+    }
+
+    const newTweet = new Tweet({
+      content: sanitizedContent,
+      userId: userId,
+      image: req.files && req.files.image ? '/uploads/' + req.files.image[0].filename : '',
+      video: req.files && req.files.video ? '/uploads/' + req.files.video[0].filename : '',
+      views: 1 // İlk görüntüleme
+    });
+
+    await newTweet.save();
+    console.log('Tweet başarıyla kaydedildi:', newTweet);
+
+    // Tweet'i kullanıcı bilgileriyle birlikte döndür
+    const populatedTweet = await Tweet.findById(newTweet._id).populate('userId', 'username displayName profileImage');
+
+    res.status(201).json({
+      success: true,
+      message: 'Tweet başarıyla oluşturuldu',
+      tweet: {
+        _id: populatedTweet._id,
+        content: populatedTweet.content,
+        image: populatedTweet.image,
+        video: populatedTweet.video,
+        likes: populatedTweet.likes,
+        retweets: populatedTweet.retweets,
+        comments: populatedTweet.comments,
+        views: populatedTweet.views,
+        created_at: populatedTweet.created_at,
+        user: {
+          _id: populatedTweet.userId._id,
+          username: populatedTweet.userId.username,
+          displayName: populatedTweet.userId.displayName,
+          profileImage: populatedTweet.userId.profileImage
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Tweet oluşturma hatası:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Sunucu hatası'
+    });
+  }
+});
+
+// Tüm tweetleri getirme endpointi
+app.get('/api/tweets', async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
+    const tweets = await Tweet.find()
+      .populate('userId', 'username displayName profileImage')
+      .sort({ created_at: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const formattedTweets = tweets.map(tweet => ({
+      _id: tweet._id,
+      content: tweet.content,
+      image: tweet.image,
+      video: tweet.video,
+      likes: tweet.likes,
+      retweets: tweet.retweets,
+      comments: tweet.comments,
+      views: tweet.views,
+      created_at: tweet.created_at,
+      user: {
+        _id: tweet.userId._id,
+        username: tweet.userId.username,
+        displayName: tweet.userId.displayName,
+        profileImage: tweet.userId.profileImage
+      }
+    }));
+
+    res.json({
+      success: true,
+      tweets: formattedTweets,
+      pagination: {
+        page,
+        limit,
+        hasMore: tweets.length === limit
+      }
+    });
+
+  } catch (error) {
+    console.error('Tweet listesi getirme hatası:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Sunucu hatası'
+    });
+  }
+});
+
+// Belirli bir kullanıcının tweetlerini getirme endpointi
+app.get('/api/tweets/user/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
+    const tweets = await Tweet.find({ userId })
+      .populate('userId', 'username displayName profileImage')
+      .sort({ created_at: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const formattedTweets = tweets.map(tweet => ({
+      _id: tweet._id,
+      content: tweet.content,
+      image: tweet.image,
+      video: tweet.video,
+      likes: tweet.likes,
+      retweets: tweet.retweets,
+      comments: tweet.comments,
+      views: tweet.views,
+      created_at: tweet.created_at,
+      user: {
+        _id: tweet.userId._id,
+        username: tweet.userId.username,
+        displayName: tweet.userId.displayName,
+        profileImage: tweet.userId.profileImage
+      }
+    }));
+
+    res.json({
+      success: true,
+      tweets: formattedTweets,
+      pagination: {
+        page,
+        limit,
+        hasMore: tweets.length === limit
+      }
+    });
+
+  } catch (error) {
+    console.error('Kullanıcı tweetleri getirme hatası:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Sunucu hatası'
+    });
+  }
+});
+
+// Tweet beğenme/beğenmeme endpointi
+app.post('/api/tweets/:tweetId/like', async (req, res) => {
+  try {
+    const { tweetId } = req.params;
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: 'UserId gerekli'
+      });
+    }
+
+    const tweet = await Tweet.findById(tweetId);
+    if (!tweet) {
+      return res.status(404).json({
+        success: false,
+        message: 'Tweet bulunamadı'
+      });
+    }
+
+    const userObjectId = new mongoose.Types.ObjectId(userId);
+    const isLiked = tweet.likedBy.includes(userObjectId);
+
+    if (isLiked) {
+      // Beğeniyi kaldır
+      tweet.likedBy.pull(userObjectId);
+      tweet.likes = Math.max(0, tweet.likes - 1);
+    } else {
+      // Beğeni ekle
+      tweet.likedBy.push(userObjectId);
+      tweet.likes += 1;
+    }
+
+    await tweet.save();
+
+    res.json({
+      success: true,
+      liked: !isLiked,
+      likes: tweet.likes
+    });
+
+  } catch (error) {
+    console.error('Tweet beğeni hatası:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Sunucu hatası'
+    });
+  }
+});
+
+// Tweet görüntüleme sayısını artırma endpointi
+app.post('/api/tweets/:tweetId/view', async (req, res) => {
+  try {
+    const { tweetId } = req.params;
+
+    const tweet = await Tweet.findByIdAndUpdate(
+      tweetId,
+      { $inc: { views: 1 } },
+      { new: true }
+    );
+
+    if (!tweet) {
+      return res.status(404).json({
+        success: false,
+        message: 'Tweet bulunamadı'
+      });
+    }
+
+    res.json({
+      success: true,
+      views: tweet.views
+    });
+
+  } catch (error) {
+    console.error('Tweet görüntüleme hatası:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Sunucu hatası'
+    });
+  }
+});
+
+// Yorum ekleme endpoint'i
+app.post('/api/comments', upload.single('image'), async (req, res) => {
+  try {
+    const { content, userId, tweetId } = req.body;
+
+    if (!content || !userId || !tweetId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Content, userId ve tweetId gerekli'
+      });
+    }
+
+    // İçeriği güvenli hale getir
+    const sanitizedContent = sanitizeInput(content);
+    if (!sanitizedContent || sanitizedContent.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Yorum içeriği geçersiz'
+      });
+    }
+
+    // Kullanıcının var olup olmadığını kontrol et
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Kullanıcı bulunamadı'
+      });
+    }
+
+    // Tweet'in var olup olmadığını kontrol et
+    const tweet = await Tweet.findById(tweetId);
+    if (!tweet) {
+      return res.status(404).json({
+        success: false,
+        message: 'Tweet bulunamadı'
+      });
+    }
+
+    // Yorum oluştur
+    const newComment = new Comment({
+      content: sanitizedContent,
+      userId: userId,
+      tweetId: tweetId,
+      image: req.file ? '/uploads/' + req.file.filename : ''
+    });
+
+    await newComment.save();
+
+    // Tweet'in yorum sayısını artır
+    await Tweet.findByIdAndUpdate(tweetId, {
+      $inc: { comments: 1 }
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Yorum başarıyla eklendi',
+      comment: newComment
+    });
+
+  } catch (error) {
+    console.error('Yorum ekleme hatası:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Sunucu hatası'
+    });
+  }
+});
+
+// Yorum silme endpoint'i
+app.delete('/api/comments/:commentId', async (req, res) => {
+  try {
+    const { commentId } = req.params;
+    const { userId } = req.body;
+
+    // Yorum var mı kontrol et
+    const comment = await Comment.findById(commentId);
+    if (!comment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Yorum bulunamadı'
+      });
+    }
+
+    // Sadece yorum sahibi silebilir
+    if (comment.userId.toString() !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Bu yorumu silme yetkiniz yok'
+      });
+    }
+
+    // Yorumu sil
+    await Comment.findByIdAndDelete(commentId);
+
+    // Tweet'in yorum sayısını azalt
+    await Tweet.findByIdAndUpdate(comment.tweetId, {
+      $inc: { comments: -1 }
+    });
+
+    res.json({
+      success: true,
+      message: 'Yorum başarıyla silindi'
+    });
+
+  } catch (error) {
+    console.error('Yorum silme hatası:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Sunucu hatası'
+    });
+  }
+});
+
+// Yorumları getirme endpoint'i
+app.get('/api/comments/:tweetId', async (req, res) => {
+  try {
+    const { tweetId } = req.params;
+
+    // Tweet'in var olup olmadığını kontrol et
+    const tweet = await Tweet.findById(tweetId);
+    if (!tweet) {
+      return res.status(404).json({
+        success: false,
+        message: 'Tweet bulunamadı'
+      });
+    }
+
+    // Yorumları getir (kullanıcı bilgileriyle birlikte)
+    const comments = await Comment.find({ tweetId: tweetId })
+      .populate('userId', 'username displayName profileImage')
+      .sort({ created_at: 1 }); // Eskiden yeniye sırala
+
+    const formattedComments = comments.map(comment => ({
+      _id: comment._id,
+      content: comment.content,
+      image: comment.image,
+      user: comment.userId,
+      likes: comment.likes,
+      likedBy: comment.likedBy,
+      created_at: comment.created_at
+    }));
+
+    res.json({
+      success: true,
+      comments: formattedComments,
+      count: comments.length
+    });
+
+  } catch (error) {
+    console.error('Yorumları getirme hatası:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Sunucu hatası'
+    });
+  }
+});
+
+// Kullanıcının beğendiği tweetleri getirme endpoint'i
+app.get('/api/user/:userId/liked-tweets', async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Kullanıcının var olup olmadığını kontrol et
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Kullanıcı bulunamadı'
+      });
+    }
+
+    // Kullanıcının beğendiği tweetleri getir
+    const likedTweets = await Tweet.find({ 
+      likedBy: new mongoose.Types.ObjectId(userId) 
+    })
+    .populate('userId', 'username displayName profileImage')
+    .populate('comments')
+    .sort({ created_at: -1 }); // Yeniden eskiye sırala
+
+    const formattedTweets = likedTweets.map(tweet => ({
+      _id: tweet._id,
+      content: tweet.content,
+      image: tweet.image,
+      video: tweet.video,
+      user: tweet.userId,
+      likes: tweet.likes,
+      comments: tweet.comments.length,
+      retweets: tweet.retweets,
+      views: tweet.views,
+      likedBy: tweet.likedBy,
+      created_at: tweet.created_at
+    }));
+
+    res.json({
+      success: true,
+      tweets: formattedTweets,
+      count: formattedTweets.length
+    });
+
+  } catch (error) {
+    console.error('Beğenilen tweetleri getirme hatası:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Sunucu hatası'
+    });
+  }
+});
+
+// Kullanıcının kendi tweetlerini getirme endpoint'i
+app.get('/api/user/:userId/tweets', async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Kullanıcının var olup olmadığını kontrol et
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Kullanıcı bulunamadı'
+      });
+    }
+
+    // Kullanıcının tweetlerini getir
+    const userTweets = await Tweet.find({ 
+      userId: new mongoose.Types.ObjectId(userId) 
+    })
+    .populate('userId', 'username displayName profileImage')
+    .populate('comments')
+    .sort({ created_at: -1 }); // Yeniden eskiye sırala
+
+    const formattedTweets = userTweets.map(tweet => ({
+      _id: tweet._id,
+      content: tweet.content,
+      image: tweet.image,
+      video: tweet.video,
+      user: tweet.userId,
+      likes: tweet.likes,
+      comments: tweet.comments.length,
+      retweets: tweet.retweets,
+      views: tweet.views,
+      likedBy: tweet.likedBy,
+      created_at: tweet.created_at
+    }));
+
+    res.json({
+      success: true,
+      tweets: formattedTweets,
+      count: formattedTweets.length
+    });
+
+  } catch (error) {
+    console.error('Kullanıcı tweetlerini getirme hatası:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Sunucu hatası'
+    });
+  }
+});
+
+// Tweet silme endpoint'i
+app.delete('/api/tweets/:tweetId', async (req, res) => {
+  try {
+    const { tweetId } = req.params;
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: 'UserId gerekli'
+      });
+    }
+
+    // Tweet'i bul
+    const tweet = await Tweet.findById(tweetId);
+    if (!tweet) {
+      return res.status(404).json({
+        success: false,
+        message: 'Tweet bulunamadı'
+      });
+    }
+
+    // Kullanıcı kendi tweet'ini mi siliyor kontrol et
+    if (tweet.userId.toString() !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Bu tweet\'i silme yetkiniz yok'
+      });
+    }
+
+    // Tweet'i sil
+    await Tweet.findByIdAndDelete(tweetId);
+
+    // İlgili yorumları da sil
+    await Comment.deleteMany({ tweetId: tweetId });
+
+    res.json({
+      success: true,
+      message: 'Tweet başarıyla silindi'
+    });
+
+  } catch (error) {
+    console.error('Tweet silme hatası:', error);
     res.status(500).json({
       success: false,
       message: 'Sunucu hatası'
