@@ -76,6 +76,77 @@ db.once('open', () => {
   console.log('MongoDB bağlantısı başarılı!');
 });
 
+// Dosya silme yardımcı fonksiyonu
+function deleteFileIfExists(filePath) {
+  try {
+    if (filePath && fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+      console.log('Dosya silindi:', filePath);
+      return true;
+    }
+  } catch (error) {
+    console.error('Dosya silinirken hata:', error);
+    return false;
+  }
+  return false;
+}
+
+// Orphan dosyaları temizlemek için yardımcı fonksiyon
+async function cleanupOrphanFiles() {
+  try {
+    const uploadsPath = path.join(__dirname, 'uploads');
+    if (!fs.existsSync(uploadsPath)) return;
+
+    const files = fs.readdirSync(uploadsPath);
+    const allTweets = await Tweet.find({}, 'image video');
+    const allUsers = await User.find({}, 'profileImage bannerImage');
+    
+    const usedFiles = new Set();
+    
+    // Tweet dosyalarını topla
+    allTweets.forEach(tweet => {
+      if (tweet.image) {
+        const filename = path.basename(tweet.image);
+        usedFiles.add(filename);
+      }
+      if (tweet.video) {
+        const filename = path.basename(tweet.video);
+        usedFiles.add(filename);
+      }
+    });
+    
+    // Kullanıcı profil dosyalarını topla
+    allUsers.forEach(user => {
+      if (user.profileImage) {
+        const filename = path.basename(user.profileImage);
+        usedFiles.add(filename);
+      }
+      if (user.bannerImage) {
+        const filename = path.basename(user.bannerImage);
+        usedFiles.add(filename);
+      }
+    });
+    
+    // Kullanılmayan dosyaları sil
+    let deletedCount = 0;
+    files.forEach(file => {
+      if (!usedFiles.has(file)) {
+        const filePath = path.join(uploadsPath, file);
+        if (deleteFileIfExists(filePath)) {
+          deletedCount++;
+        }
+      }
+    });
+    
+    if (deletedCount > 0) {
+      console.log(`${deletedCount} orphan dosya temizlendi`);
+    }
+    
+  } catch (error) {
+    console.error('Orphan dosya temizleme hatası:', error);
+  }
+}
+
 // Kullanıcı Şeması
 const userSchema = new mongoose.Schema({
   username: {
@@ -586,9 +657,7 @@ app.put('/api/user/:userId', upload.fields([
       // Eski profil resmini sil
       if (user.profileImage) {
         const oldImagePath = path.join(__dirname, user.profileImage);
-        if (fs.existsSync(oldImagePath)) {
-          fs.unlinkSync(oldImagePath);
-        }
+        deleteFileIfExists(oldImagePath);
       }
       updateData.profileImage = '/uploads/' + req.files.profileImage[0].filename;
     }
@@ -598,9 +667,7 @@ app.put('/api/user/:userId', upload.fields([
       // Eski banner resmini sil
       if (user.bannerImage) {
         const oldBannerPath = path.join(__dirname, user.bannerImage);
-        if (fs.existsSync(oldBannerPath)) {
-          fs.unlinkSync(oldBannerPath);
-        }
+        deleteFileIfExists(oldBannerPath);
       }
       updateData.bannerImage = '/uploads/' + req.files.bannerImage[0].filename;
     }
@@ -1237,6 +1304,17 @@ app.delete('/api/tweets/:tweetId', async (req, res) => {
       });
     }
 
+    // Tweet ile ilişkili dosyaları sil
+    if (tweet.image) {
+      const imagePath = path.join(__dirname, tweet.image);
+      deleteFileIfExists(imagePath);
+    }
+
+    if (tweet.video) {
+      const videoPath = path.join(__dirname, tweet.video);
+      deleteFileIfExists(videoPath);
+    }
+
     // Tweet'i sil
     await Tweet.findByIdAndDelete(tweetId);
 
@@ -1253,6 +1331,23 @@ app.delete('/api/tweets/:tweetId', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Sunucu hatası'
+    });
+  }
+});
+
+// Orphan dosyaları temizleme endpoint'i (admin/maintenance için)
+app.post('/api/cleanup-files', async (req, res) => {
+  try {
+    await cleanupOrphanFiles();
+    res.json({
+      success: true,
+      message: 'Dosya temizleme işlemi tamamlandı'
+    });
+  } catch (error) {
+    console.error('Dosya temizleme hatası:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Dosya temizleme sırasında hata oluştu'
     });
   }
 });
