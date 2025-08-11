@@ -366,6 +366,36 @@
       <div id="profileContent" class="content-section">
         <!--  -->
       </div>
+      
+      
+      <div id="notificationsContent" class="content-section">
+        <div class="notifications-header">
+          <h1>Notifications</h1>
+          <div class="notifications-tabs">
+            <div class="notification-tab active">All</div>
+            <div class="notification-tab">Mentions</div>
+          </div>
+        </div>
+        
+        <div class="notifications-list" id="notificationsList">
+          <!-- Bildirimler buraya dinamik olarak eklenecek -->
+        </div>
+        
+        <div class="notifications-empty" id="notificationsEmpty" style="display: none;">
+          <div class="empty-notifications">
+            <i class="far fa-bell" style="font-size: 64px; color: #71767b; margin-bottom: 16px;"></i>
+            <h2>Nothing to see here — yet</h2>
+            <p>From likes to reposts and a whole lot more, this is where all the action happens.</p>
+          </div>
+        </div>
+        
+        <div class="notifications-loading" id="notificationsLoading" style="display: none;">
+          <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Loading notifications...</p>
+          </div>
+        </div>
+      </div>
     </div>
 
 
@@ -389,12 +419,6 @@
           <div class="trend-more"><i class="fas fa-ellipsis-h"></i></div>
         </div>
         <div class="trending-item">
-          <div class="trend-category">Politics · Trending</div>
-          <div class="trend-tag">Mnp Sözünü Tut</div>
-          <div class="trend-posts">12.0K posts</div>
-          <div class="trend-more"><i class="fas fa-ellipsis-h"></i></div>
-        </div>
-        <div class="trending-item">
           <div class="trend-category">Business & finance · Trending</div>
           <div class="trend-tag">#faiz</div>
           <div class="trend-more"><i class="fas fa-ellipsis-h"></i></div>
@@ -410,33 +434,7 @@
 
       <div class="who-to-follow">
         <h2>Who to follow</h2>
-        <div class="follow-item">
-          <img src="" alt="İlber Ortaylı" class="avatar" />
-          <div class="follow-info">
-            <div class="follow-name">İlber Ortaylı <i class="fas fa-check-circle verified"></i></div>
-            <div class="follow-username">@ILBERORTAYLIGSU</div>
-          </div>
-          <button class="follow-button">Follow</button>
-        </div>
-        
-        <div class="follow-item">
-          <img src="" alt="Prof. Dr. Naci Görür" class="avatar" />
-          <div class="follow-info">
-            <div class="follow-name">Prof. Dr. Naci Görür <i class="fas fa-check-circle verified"></i></div>
-            <div class="follow-username">@nacigorur</div>
-          </div>
-          <button class="follow-button">Follow</button>
-        </div>
-        
-        <div class="follow-item">
-          <img src="" alt="AFAD Deprem" class="avatar" />
-          <div class="follow-info">
-            <div class="follow-name">AFAD Deprem <i class="fas fa-check-circle verified"></i></div>
-            <div class="follow-username">@DepremDairesi</div>
-          </div>
-          <button class="follow-button">Follow</button>
-        </div>
-        
+        <!-- Kullanıcılar dinamik olarak JavaScript ile eklenecek -->
         <div class="show-more">Show more</div>
       </div>
       

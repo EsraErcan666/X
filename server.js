@@ -327,6 +327,45 @@ const commentSchema = new mongoose.Schema({
 
 const Comment = mongoose.model('Comment', commentSchema);
 
+// Notification Şeması
+const notificationSchema = new mongoose.Schema({
+  type: {
+    type: String,
+    required: true,
+    enum: ['like', 'comment', 'retweet', 'follow']
+  },
+  fromUser: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  toUser: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  tweet: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Tweet',
+    required: false
+  },
+  comment: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Comment',
+    required: false
+  },
+  read: {
+    type: Boolean,
+    default: false
+  },
+  created_at: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+const Notification = mongoose.model('Notification', notificationSchema);
+
 // Güvenlik fonksiyonları
 function sanitizeInput(input) {
   if (typeof input !== 'string') return '';
@@ -940,11 +979,11 @@ app.post('/api/tweets/:tweetId/like', async (req, res) => {
     if (!userId) {
       return res.status(400).json({
         success: false,
-        message: 'UserId gerekli'
+        message: 'Kullanıcı ID gerekli'
       });
     }
 
-    const tweet = await Tweet.findById(tweetId);
+    const tweet = await Tweet.findById(tweetId).populate('userId', 'username displayName');
     if (!tweet) {
       return res.status(404).json({
         success: false,
@@ -959,10 +998,29 @@ app.post('/api/tweets/:tweetId/like', async (req, res) => {
       // Beğeniyi kaldır
       tweet.likedBy.pull(userObjectId);
       tweet.likes = Math.max(0, tweet.likes - 1);
+      
+      // Bildirimi sil
+      await Notification.findOneAndDelete({
+        type: 'like',
+        fromUser: userObjectId,
+        toUser: tweet.userId._id,
+        tweet: tweetId
+      });
     } else {
       // Beğeni ekle
       tweet.likedBy.push(userObjectId);
       tweet.likes += 1;
+      
+      // Kendi tweet'ini beğenmiyorsa bildirim oluştur
+      if (tweet.userId._id.toString() !== userId) {
+        const notification = new Notification({
+          type: 'like',
+          fromUser: userObjectId,
+          toUser: tweet.userId._id,
+          tweet: tweetId
+        });
+        await notification.save();
+      }
     }
 
     await tweet.save();
@@ -1067,6 +1125,18 @@ app.post('/api/comments', upload.single('image'), async (req, res) => {
     await Tweet.findByIdAndUpdate(tweetId, {
       $inc: { comments: 1 }
     });
+    
+    // Kendi tweet'ine yorum yapmıyorsa bildirim oluştur
+    if (tweet.userId.toString() !== userId) {
+      const notification = new Notification({
+        type: 'comment',
+        fromUser: userId,
+        toUser: tweet.userId,
+        tweet: tweetId,
+        comment: newComment._id
+      });
+      await notification.save();
+    }
 
     res.status(201).json({
       success: true,
@@ -1348,6 +1418,106 @@ app.post('/api/cleanup-files', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Dosya temizleme sırasında hata oluştu'
+    });
+  }
+});
+
+// En çok posta sahip kullanıcıları getirme endpoint'i
+app.get('/api/top-users', async (req, res) => {
+  try {
+    // Her kullanıcının post sayısını hesapla ve en çok posta sahip 3 kullanıcıyı getir
+    const topUsers = await User.aggregate([
+      {
+        $lookup: {
+          from: 'tweets',
+          localField: '_id',
+          foreignField: 'userId',
+          as: 'tweets'
+        }
+      },
+      {
+        $addFields: {
+          tweetCount: { $size: '$tweets' }
+        }
+      },
+      {
+        $match: {
+          tweetCount: { $gt: 0 } // En az 1 tweet'i olan kullanıcılar
+        }
+      },
+      {
+        $sort: { tweetCount: -1 } // Tweet sayısına göre azalan sıralama
+      },
+      {
+        $limit: 3 // İlk 3 kullanıcı
+      },
+      {
+        $project: {
+          _id: 1,
+          username: 1,
+          displayName: 1,
+          profileImage: 1,
+          tweetCount: 1
+        }
+      }
+    ]);
+
+    res.json({
+      success: true,
+      users: topUsers
+    });
+
+  } catch (error) {
+    console.error('En çok posta sahip kullanıcıları getirme hatası:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Sunucu hatası'
+    });
+  }
+});
+
+// Kullanıcının bildirimlerini getir
+app.get('/api/notifications/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    const notifications = await Notification.find({ toUser: userId })
+      .populate('fromUser', 'username displayName profileImage')
+      .populate('tweet', 'content')
+      .sort({ created_at: -1 })
+      .limit(50);
+    
+    res.json({
+      success: true,
+      notifications: notifications
+    });
+  } catch (error) {
+    console.error('Bildirimler getirilirken hata:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Bildirimler getirilirken hata oluştu'
+    });
+  }
+});
+
+// Bildirimi okundu olarak işaretle
+app.put('/api/notifications/:notificationId/read', async (req, res) => {
+  try {
+    const { notificationId } = req.params;
+    
+    await Notification.findByIdAndUpdate(notificationId, {
+      read: true
+    });
+    
+    res.json({
+      success: true,
+      message: 'Bildirim okundu olarak işaretlendi'
+    });
+  } catch (error) {
+    console.error('Bildirim güncellenirken hata:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Bildirim güncellenirken hata oluştu'
     });
   }
 });

@@ -90,6 +90,71 @@ function formatTimestamp(timestamp) {
   });
 }
 
+async function loadTopUsers() {
+  try {
+    const response = await fetch('http://localhost:3000/api/top-users');
+    const data = await response.json();
+    
+    if (data.success && data.users.length > 0) {
+      updateWhoToFollowSection(data.users);
+    } else {
+      console.log('En çok posta sahip kullanıcı bulunamadı');
+    }
+  } catch (error) {
+    console.error('En çok posta sahip kullanıcıları yükleme hatası:', error);
+  }
+}
+
+function updateWhoToFollowSection(users) {
+  const whoToFollowSections = document.querySelectorAll('.who-to-follow, .who-to-follow-section');
+  
+  whoToFollowSections.forEach(section => {
+    const existingItems = section.querySelectorAll('.follow-item');
+    existingItems.forEach(item => item.remove());
+    
+    const showMoreElement = section.querySelector('.show-more');
+    
+    users.forEach(user => {
+      const followItem = createFollowItem(user);
+      if (showMoreElement) {
+        section.insertBefore(followItem, showMoreElement);
+      } else {
+        section.appendChild(followItem);
+      }
+    });
+  });
+}
+
+// Follow item elementi oluştur
+function createFollowItem(user) {
+  const followItem = document.createElement('div');
+  followItem.className = 'follow-item';
+  
+  const displayName = user.displayName || user.username;
+  
+  // Profil resmi URL'sini doğru şekilde oluştur
+  let profileImageSrc = '';
+  if (user.profileImage && user.profileImage.trim() !== '') {
+    profileImageSrc = user.profileImage.startsWith('http') 
+      ? user.profileImage 
+      : `http://localhost:3000${user.profileImage}`;
+  } else {
+    // Varsayılan avatar göster
+    profileImageSrc = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23657786"/%3E%3C/svg%3E';
+  }
+  
+  followItem.innerHTML = `
+    <img src="${profileImageSrc}" alt="${displayName}" class="avatar" />
+    <div class="follow-info">
+      <div class="follow-name">${displayName}</div>
+      <div class="follow-username">@${user.username}</div>
+    </div>
+    <button class="follow-button">Follow</button>
+  `;
+  
+  return followItem;
+}
+
 document.addEventListener("DOMContentLoaded", function() {
   tweetInput = document.getElementById('tweetInput');
   modalTweetInput = document.getElementById('modalTweetInput');
@@ -103,6 +168,7 @@ document.addEventListener("DOMContentLoaded", function() {
   postButtonMain = document.querySelector('.post-button');
   
   loadTweets(); // Tweet'leri yükle
+  loadTopUsers(); // En çok posta sahip kullanıcıları yükle
   setupEventListeners();
   setupTweetModal();
   setupButtonStates();
@@ -155,7 +221,9 @@ function setupEventListeners() {
       menuItems.forEach(i => i.classList.remove("active"));
       this.classList.add("active");
       
-      if (index === 8) { 
+      if (index === 2) { // Notifications (3. sırada)
+        showNotificationsContent();
+      } else if (index === 8) { // Profile
         showProfileContent();
       } else {
         showHomeContent();
@@ -171,6 +239,7 @@ function setupEventListeners() {
 function showProfileContent() {
   const homeContent = document.getElementById('homeContent');
   const profileContent = document.getElementById('profileContent');
+  const notificationsContent = document.getElementById('notificationsContent');
   
   if (profileContent.innerHTML.trim() === '<!--  -->') {
     loadProfileContent();
@@ -178,9 +247,16 @@ function showProfileContent() {
     loadUserProfile();
   }
   
+  // Diğer content'leri gizle
   homeContent.classList.remove('active');
+  if (notificationsContent) {
+    notificationsContent.classList.remove('active');
+  }
+  
+  // Profile content'i göster
   profileContent.classList.add('active');
   setupProfileEventListeners();
+  loadTopUsers();
   
   // Varsayılan olarak Posts tab'ını aktif yap ve kullanıcının postlarını yükle
   setTimeout(() => {
@@ -190,7 +266,6 @@ function showProfileContent() {
       document.querySelectorAll('.profile-tab').forEach(tab => tab.classList.remove('active'));
       // Posts tab'ını aktif yap
       postsTab.classList.add('active');
-      // Kullanıcının postlarını yükle
       loadUserPosts();
     }
   }, 100);
@@ -199,10 +274,16 @@ function showProfileContent() {
 function showHomeContent() {
   const homeContent = document.getElementById('homeContent');
   const profileContent = document.getElementById('profileContent');
+  const notificationsContent = document.getElementById('notificationsContent');
   
+  // Diğer content'leri gizle
   profileContent.classList.remove('active');
-  homeContent.classList.add('active');
+  if (notificationsContent) {
+    notificationsContent.classList.remove('active');
+  }
   
+  // Home content'i göster
+  homeContent.classList.add('active');
   
   const menuItems = document.querySelectorAll(".left-sidebar nav ul li");
   menuItems.forEach(i => i.classList.remove("active"));
@@ -215,10 +296,10 @@ function loadProfileContent() {
   const profileClone = profileTemplate.content.cloneNode(true);
   profileContent.appendChild(profileClone);
   loadUserProfile();
-  loadUserTweets(); // Kullanıcının tweet'lerini yükle
+  loadUserTweets();
+  loadTopUsers();
 }
 
-// Kullanıcının tweet'lerini yükle
 async function loadUserTweets() {
   const user = JSON.parse(localStorage.getItem('user'));
   if (!user || !user._id) return;
@@ -229,7 +310,6 @@ async function loadUserTweets() {
     
     if (data.success) {
       displayUserTweets(data.tweets);
-      // Post sayısını güncelle
       updatePostCount(data.tweets.length);
     } else {
       console.error('Kullanıcı tweet\'leri yükleme hatası:', data.message);
@@ -239,7 +319,6 @@ async function loadUserTweets() {
   }
 }
 
-// Post sayısını güncelle
 function updatePostCount(count) {
   const postsCountElement = document.querySelector('.posts-count');
   if (postsCountElement) {
@@ -364,9 +443,7 @@ function displayUserTweets(userTweets) {
   });
 }
 
-// Kullanıcı profil verilerini API'den çek
 function loadUserProfile() {
-  // LocalStorage'dan kullanıcı bilgilerini al
   const user = JSON.parse(localStorage.getItem('user'));
   let userId;
   
@@ -393,7 +470,6 @@ function loadUserProfile() {
         showDefaultProfile();
       });
   } else {
-    // Kullanıcı bilgisi yoksa varsayılan profili göster
     showDefaultProfile();
     showNotification('Oturum bilgisi bulunamadı', 'error');
   }
@@ -1963,7 +2039,6 @@ function setupTweetEventListeners() {
     });
   });
   
-  // Comment butonları için event listener'lar
   document.querySelectorAll('.comment-action').forEach(button => {
     button.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -1974,8 +2049,7 @@ function setupTweetEventListeners() {
       }
     });
   });
-  
-  // Retweet butonları için event listener'lar
+
   document.querySelectorAll('.retweet-action').forEach(button => {
     button.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -2272,4 +2346,184 @@ async function deleteTweet(tweetId) {
 function likeComment(commentId) {
   console.log('Yorum beğenildi:', commentId);
   // Bu fonksiyon ileride implement edilebilir
+}
+
+
+function showNotificationsContent() {
+  const homeContent = document.getElementById('homeContent');
+  const profileContent = document.getElementById('profileContent');
+  const notificationsContent = document.getElementById('notificationsContent');
+  
+  homeContent.classList.remove('active');
+  profileContent.classList.remove('active');
+  
+  notificationsContent.classList.add('active'); 
+  loadNotifications();
+  setupNotificationTabs();
+}
+
+
+function setupNotificationTabs() {
+  const notificationTabs = document.querySelectorAll('.notification-tab');
+  notificationTabs.forEach(tab => {
+    tab.addEventListener('click', function() {
+      notificationTabs.forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+      
+      // Tab'a göre bildirimleri filtrele
+      const tabType = this.textContent.toLowerCase();
+      filterNotifications(tabType);
+    });
+  });
+}
+
+async function loadNotifications() {
+  const user = JSON.parse(localStorage.getItem('user'));
+  if (!user || !user._id) {
+    showEmptyNotifications();
+    return;
+  }
+  showNotificationsLoading();
+  try {
+    const response = await fetch(`http://localhost:3000/api/notifications/${user._id}`);
+    const data = await response.json();
+    
+    if (data.success && data.notifications.length > 0) {
+      displayNotifications(data.notifications);
+    } else {
+      showEmptyNotifications();
+    }
+  } catch (error) {
+    console.error('Bildirimler yüklenirken hata:', error);
+    showEmptyNotifications();
+  }
+}
+
+function displayNotifications(notifications) {
+  const notificationsList = document.getElementById('notificationsList');
+  const notificationsEmpty = document.getElementById('notificationsEmpty');
+  const notificationsLoading = document.getElementById('notificationsLoading');
+  
+  // Loading ve empty state'leri gizle
+  notificationsLoading.style.display = 'none';
+  notificationsEmpty.style.display = 'none';
+  notificationsList.innerHTML = '';
+  
+  notifications.forEach(notification => {
+    const notificationEl = createNotificationElement(notification);
+    notificationsList.appendChild(notificationEl);
+  });
+}
+function createNotificationElement(notification) {
+  const notificationEl = document.createElement('div');
+  notificationEl.className = `notification-item ${notification.read ? '' : 'unread'}`;
+  
+  let iconClass, iconColor, actionText;
+  
+  switch (notification.type) {
+    case 'like':
+      iconClass = 'fas fa-heart';
+      iconColor = 'like';
+      actionText = 'liked your post';
+      break;
+    case 'comment':
+      iconClass = 'far fa-comment';
+      iconColor = 'comment';
+      actionText = 'commented on your post';
+      break;
+    case 'retweet':
+      iconClass = 'fas fa-retweet';
+      iconColor = 'retweet';
+      actionText = 'retweeted your post';
+      break;
+    default:
+      iconClass = 'fas fa-bell';
+      iconColor = 'comment';
+      actionText = 'interacted with your post';
+  }
+  
+  const userAvatar = notification.fromUser.profileImage 
+    ? (notification.fromUser.profileImage.startsWith('http') 
+        ? notification.fromUser.profileImage 
+        : `http://localhost:3000${notification.fromUser.profileImage}`)
+    : 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"%3E%3Ccircle cx="16" cy="16" r="16" fill="%23e1e8ed"/%3E%3Cpath d="M16 6c2.65 0 4.8 2.15 4.8 4.8s-2.15 4.8-4.8 4.8-4.8-2.15-4.8-4.8S13.35 6 16 6zM16 19.2c-5.3 0-9.6 2.7-9.6 6v2.4h19.2v-2.4c0-3.3-4.3-6-9.6-6z" fill="%23657786"/%3E%3C/svg%3E';
+  
+  notificationEl.innerHTML = `
+    <div class="notification-icon ${iconColor}">
+      <i class="${iconClass}"></i>
+    </div>
+    <div class="notification-content">
+      <div class="notification-users">
+        <img src="${userAvatar}" alt="${notification.fromUser.displayName || notification.fromUser.username}" class="notification-avatar">
+      </div>
+      <div class="notification-text">
+        <span class="username">${notification.fromUser.displayName || notification.fromUser.username}</span>
+        <span class="action"> ${actionText}</span>
+      </div>
+      ${notification.tweet ? `
+        <div class="notification-tweet">
+          ${notification.tweet.content}
+        </div>
+      ` : ''}
+      <div class="notification-time">
+        ${formatTimestamp(notification.created_at)}
+      </div>
+    </div>
+  `;
+  
+  notificationEl.addEventListener('click', () => {
+    markNotificationAsRead(notification._id);
+    notificationEl.classList.remove('unread');
+  });
+  
+  return notificationEl;
+}
+
+async function markNotificationAsRead(notificationId) {
+  try {
+    await fetch(`http://localhost:3000/api/notifications/${notificationId}/read`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+  } catch (error) {
+    console.error('Bildirim okundu olarak işaretlenirken hata:', error);
+  }
+}
+
+// Bildirimleri filtrele
+function filterNotifications(type) {
+  const notifications = document.querySelectorAll('.notification-item');
+  
+  notifications.forEach(notification => {
+    if (type === 'all') {
+      notification.style.display = 'flex';
+    } else if (type === 'mentions') {
+      const isComment = notification.querySelector('.notification-icon.comment');
+      notification.style.display = isComment ? 'flex' : 'none';
+    }
+  });
+}
+
+// Boş bildirimler durumunu göster
+function showEmptyNotifications() {
+  const notificationsList = document.getElementById('notificationsList');
+  const notificationsEmpty = document.getElementById('notificationsEmpty');
+  const notificationsLoading = document.getElementById('notificationsLoading');
+  
+  notificationsList.innerHTML = '';
+  notificationsLoading.style.display = 'none';
+  notificationsEmpty.style.display = 'block';
+}
+
+// Loading durumunu göster
+function showNotificationsLoading() {
+  const notificationsList = document.getElementById('notificationsList');
+  const notificationsEmpty = document.getElementById('notificationsEmpty');
+  const notificationsLoading = document.getElementById('notificationsLoading');
+  
+  notificationsList.innerHTML = '';
+  notificationsEmpty.style.display = 'none';
+  notificationsLoading.style.display = 'block';
 }

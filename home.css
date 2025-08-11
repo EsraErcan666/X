@@ -19,6 +19,7 @@ body {
   width: 100%;
   max-width: 1280px;
   margin: 0 auto;
+  overflow: hidden;
 }
 
 .left-sidebar {
@@ -31,6 +32,7 @@ body {
   justify-content: space-between;
   overflow-y: auto;
   box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 .logo {
@@ -219,8 +221,10 @@ nav ul li i {
   flex: 1;
   border-right: 1px solid #2f3336;
   overflow-y: auto;
-  scrollbar-width: none; /* Firefox için */
-  -ms-overflow-style: none; /* IE ve Edge için */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  height: 100vh;
+  flex-shrink: 0;
 }
 .content::-webkit-scrollbar {
   display: none;
@@ -660,6 +664,15 @@ button.disabled:hover {
 .right-sidebar {
   width: 350px;
   padding: 0 16px;
+  height: 100vh;
+  overflow-y: auto;
+  flex-shrink: 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.right-sidebar::-webkit-scrollbar {
+  display: none;
 }
 
 .search-container {
@@ -1788,3 +1801,194 @@ button.disabled:hover {
   color: #f91880;
   background-color: rgba(249, 24, 128, 0.1);
 }
+
+.notifications-header {
+  position: sticky;
+  top: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(12px);
+  z-index: 100;
+  border-bottom: 1px solid #2f3336;
+  padding: 16px;
+}
+
+.notifications-header h1 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #e7e9ea;
+  margin: 0 0 16px 0;
+}
+
+.notifications-tabs {
+  display: flex;
+  border-bottom: 1px solid #2f3336;
+}
+
+.notification-tab {
+  flex: 1;
+  text-align: center;
+  padding: 16px;
+  color: #71767b;
+  cursor: pointer;
+  font-weight: 500;
+  position: relative;
+  transition: color 0.2s;
+}
+
+.notification-tab:hover {
+  background-color: rgba(239, 243, 244, 0.1);
+}
+
+.notification-tab.active {
+  color: #e7e9ea;
+  font-weight: 700;
+}
+
+.notification-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 56px;
+  height: 4px;
+  background-color: #1d9bf0;
+  border-radius: 2px;
+}
+
+.notifications-list {
+  padding: 0;
+}
+
+.notification-item {
+  padding: 16px;
+  border-bottom: 1px solid #2f3336;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+.notification-item:hover {
+  background-color: rgba(239, 243, 244, 0.03);
+}
+
+.notification-item.unread {
+  background-color: rgba(29, 155, 240, 0.05);
+  border-left: 3px solid #1d9bf0;
+}
+
+.notification-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  margin-top: 4px;
+}
+
+.notification-icon.like {
+  background-color: rgba(249, 24, 128, 0.1);
+  color: #f91880;
+}
+
+.notification-icon.comment {
+  background-color: rgba(29, 155, 240, 0.1);
+  color: #1d9bf0;
+}
+
+.notification-icon.retweet {
+  background-color: rgba(0, 186, 124, 0.1);
+  color: #00ba7c;
+}
+
+.notification-content {
+  flex: 1;
+}
+
+.notification-users {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.notification-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.notification-text {
+  color: #e7e9ea;
+  font-size: 15px;
+  line-height: 20px;
+  margin-bottom: 8px;
+}
+
+.notification-text .username {
+  font-weight: 700;
+  color: #e7e9ea;
+}
+
+.notification-text .action {
+  color: #71767b;
+}
+
+.notification-tweet {
+  background-color: rgba(239, 243, 244, 0.05);
+  border: 1px solid #2f3336;
+  border-radius: 12px;
+  padding: 12px;
+  margin-top: 8px;
+  color: #71767b;
+  font-size: 14px;
+  line-height: 18px;
+}
+
+.notification-time {
+  color: #71767b;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.empty-notifications {
+  text-align: center;
+  padding: 60px 32px;
+  color: #71767b;
+}
+
+.empty-notifications h2 {
+  font-size: 31px;
+  font-weight: 800;
+  color: #e7e9ea;
+  margin: 0 0 8px 0;
+}
+
+.empty-notifications p {
+  font-size: 15px;
+  line-height: 20px;
+  color: #71767b;
+  margin: 0;
+}
+
+.loading-spinner {
+  text-align: center;
+  padding: 40px;
+  color: #71767b;
+}
+
+.loading-spinner i {
+  font-size: 24px;
+  margin-bottom: 16px;
+}
+
+.loading-spinner p {
+  font-size: 15px;
+  margin: 0;
+}
+
