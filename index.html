@@ -56,9 +56,16 @@
     <div class="content">
       <!-- Home Content -->
       <div id="homeContent" class="content-section active">
-        <div class="tabs">
-          <div class="tab active">For you</div>
-          <div class="tab">Following</div>
+        <div class="header">
+          <div class="header-left">
+            <div class="mobile-profile-trigger">
+              <img src="" alt="Profile" class="mobile-profile-avatar">
+            </div>
+          </div>
+          <div class="tabs">
+            <div class="tab active">For you</div>
+            <div class="tab">Following</div>
+          </div>
         </div>
 
         <div class="tweet-box">
@@ -370,10 +377,15 @@
       
       <div id="notificationsContent" class="content-section">
         <div class="notifications-header">
-          <h1>Notifications</h1>
-          <div class="notifications-tabs">
-            <div class="notification-tab active">All</div>
-            <div class="notification-tab">Mentions</div>
+          <button class="mobile-back-button" id="notificationsMobileBack">
+            <i class="fas fa-arrow-left"></i>
+          </button>
+          <div class="notifications-header-content">
+            <h1>Notifications</h1>
+            <div class="notifications-tabs">
+              <div class="notification-tab active">All</div>
+              <div class="notification-tab">Mentions</div>
+            </div>
           </div>
         </div>
         
@@ -563,6 +575,77 @@
           </div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Mobile Profile Menu -->
+  <div class="mobile-profile-overlay" id="mobileProfileOverlay"></div>
+  <div class="mobile-profile-menu" id="mobileProfileMenu">
+    <div class="mobile-profile-user">
+      <button class="mobile-profile-close" id="mobileProfileClose">
+        <i class="fas fa-times"></i>
+      </button>
+      <img src="" alt="Profile" class="profile-avatar" id="mobileProfileAvatar">
+      <span class="profile-name">Esra Ercan</span>
+      <span class="profile-username">@Ciklet666</span>
+      <div class="mobile-profile-stats">
+        <a href="#" class="mobile-profile-stat">
+          <span class="number">0</span>
+          <span class="label">Following</span>
+        </a>
+        <a href="#" class="mobile-profile-stat">
+          <span class="number">0</span>
+          <span class="label">Followers</span>
+        </a>
+      </div>
+    </div>
+    
+    <div class="mobile-profile-menu-items">
+      <a href="#" class="mobile-profile-menu-item" data-action="home">
+        <i class="fas fa-home"></i>
+        <span>Home</span>
+      </a>
+      <a href="#" class="mobile-profile-menu-item" data-action="explore">
+        <i class="fas fa-search"></i>
+        <span>Explore</span>
+      </a>
+      <a href="#" class="mobile-profile-menu-item" data-action="notifications">
+        <i class="fas fa-bell"></i>
+        <span>Notifications</span>
+      </a>
+      <a href="#" class="mobile-profile-menu-item" data-action="messages">
+        <i class="fas fa-envelope"></i>
+        <span>Messages</span>
+      </a>
+      <a href="#" class="mobile-profile-menu-item" data-action="bookmarks">
+        <i class="fas fa-bookmark"></i>
+        <span>Bookmarks</span>
+      </a>
+      <a href="#" class="mobile-profile-menu-item" data-action="communities">
+        <i class="fas fa-users"></i>
+        <span>Communities</span>
+      </a>
+      <a href="#" class="mobile-profile-menu-item" data-action="premium">
+        <i class="fas fa-gem"></i>
+        <span>Premium</span>
+      </a>
+      <a href="#" class="mobile-profile-menu-item" data-action="verified">
+        <i class="fas fa-check-circle"></i>
+        <span>Verified Orgs</span>
+      </a>
+      <a href="#" class="mobile-profile-menu-item" data-action="profile">
+        <i class="fas fa-user"></i>
+        <span>Profile</span>
+      </a>
+      <a href="#" class="mobile-profile-menu-item" data-action="more">
+        <i class="fas fa-ellipsis-h"></i>
+        <span>More</span>
+      </a>
+      <div class="mobile-menu-divider"></div>
+      <a href="#" class="mobile-profile-menu-item" data-action="logout">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Log out</span>
+      </a>
     </div>
   </div>
 

@@ -175,6 +175,8 @@ document.addEventListener("DOMContentLoaded", function() {
   setupProfileMenu();
   setupTweetDropdowns(); // Tweet dropdown event listener'larını kur
   loadSidebarUserInfo();
+  initializeMobileProfileMenu(); // Mobile profil menüsünü başlat
+  initializeMobileBackButtons(); // Mobile geri butonlarını başlat
 });
 
 function setupProfileMenu() {
@@ -1357,13 +1359,24 @@ function showDefaultProfile() {
   const profileName = document.querySelector('.profile-name');
   const profileUsername = document.querySelector('.profile-username');
   const sidebarAvatar = document.querySelector('.profile-avatar');
+  const mobileProfileAvatar = document.querySelector('.mobile-profile-avatar');
+  const mobileMenuAvatar = document.getElementById('mobileProfileAvatar');
   
   if (profileName) profileName.textContent = 'Kullanıcı';
   if (profileUsername) profileUsername.textContent = '@kullanici';
-  if (sidebarAvatar) sidebarAvatar.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23fff"/%3E%3C/svg%3E';
+  
+  const defaultAvatar = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23fff"/%3E%3C/svg%3E';
+  const defaultMobileAvatar = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"%3E%3Ccircle cx="16" cy="16" r="16" fill="%23e1e8ed"/%3E%3Cpath d="M16 6c2.65 0 4.8 2.15 4.8 4.8s-2.15 4.8-4.8 4.8-4.8-2.15-4.8-4.8S13.35 6 16 6zM16 19.2c-5.3 0-9.6 2.7-9.6 6V28h19.2v-2.8c0-3.3-4.3-6-9.6-6z" fill="%23fff"/%3E%3C/svg%3E';
+  
+  if (sidebarAvatar) sidebarAvatar.src = defaultAvatar;
+  if (mobileProfileAvatar) mobileProfileAvatar.src = defaultMobileAvatar;
+  if (mobileMenuAvatar) mobileMenuAvatar.src = defaultAvatar;
 }
 function updateSidebarProfile(user) {
   const sidebarAvatar = document.querySelector('.profile-avatar');
+  const mobileProfileAvatar = document.querySelector('.mobile-profile-avatar');
+  const mobileMenuAvatar = document.getElementById('mobileProfileAvatar');
+  
   if (sidebarAvatar) {
     if (user.profileImage) {
       const fullImageUrl = user.profileImage.startsWith('http') 
@@ -1375,6 +1388,29 @@ function updateSidebarProfile(user) {
       sidebarAvatar.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23fff"/%3E%3C/svg%3E';
     }
   }
+  
+  if (mobileProfileAvatar) {
+    if (user.profileImage) {
+      const fullImageUrl = user.profileImage.startsWith('http') 
+        ? user.profileImage 
+        : `http://localhost:3000${user.profileImage}`;
+      mobileProfileAvatar.src = fullImageUrl;
+    } else {
+      mobileProfileAvatar.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"%3E%3Ccircle cx="16" cy="16" r="16" fill="%23e1e8ed"/%3E%3Cpath d="M16 6c2.65 0 4.8 2.15 4.8 4.8s-2.15 4.8-4.8 4.8-4.8-2.15-4.8-4.8S13.35 6 16 6zM16 19.2c-5.3 0-9.6 2.7-9.6 6V28h19.2v-2.8c0-3.3-4.3-6-9.6-6z" fill="%23fff"/%3E%3C/svg%3E';
+    }
+  }
+  
+  if (mobileMenuAvatar) {
+    if (user.profileImage) {
+      const fullImageUrl = user.profileImage.startsWith('http') 
+        ? user.profileImage 
+        : `http://localhost:3000${user.profileImage}`;
+      mobileMenuAvatar.src = fullImageUrl;
+    } else {
+      mobileMenuAvatar.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23fff"/%3E%3C/svg%3E';
+    }
+  }
+  
   const profileName = document.querySelector('.profile-name');
   if (profileName) {
     profileName.textContent = user.displayName || user.username;
@@ -1394,7 +1430,6 @@ let selectedModalVideo = null;
 let currentTweetForComment = null;
 
 function selectImage() {
-  // Video varsa önce onu temizle
   if (selectedVideo) {
     removeVideo();
   }
@@ -1402,7 +1437,6 @@ function selectImage() {
 }
 
 function selectVideo() {
-  // Resim varsa önce onu temizle
   if (selectedImage) {
     removeImage();
   }
@@ -1410,7 +1444,6 @@ function selectVideo() {
 }
 
 function selectModalImage() {
-  // Modal video varsa önce onu temizle
   if (selectedModalVideo) {
     removeModalVideo();
   }
@@ -1418,7 +1451,6 @@ function selectModalImage() {
 }
 
 function selectModalVideo() {
-  // Modal resim varsa önce onu temizle
   if (selectedModalImage) {
     removeModalImage();
   }
@@ -1434,8 +1466,6 @@ function removeImage() {
   previewImg.src = '';
   fileInput.value = '';
   selectedImage = null;
-  
-  // Buton durumunu güncelle
   updateButtonState();
 }
 
@@ -1450,8 +1480,6 @@ function removeVideo() {
   videoSource.src = '';
   fileInput.value = '';
   selectedVideo = null;
-  
-  // Buton durumunu güncelle
   updateButtonState();
 }
 
@@ -1464,8 +1492,6 @@ function removeModalImage() {
   modalPreviewImg.src = '';
   modalFileInput.value = '';
   selectedModalImage = null;
-  
-  // Modal buton durumunu güncelle
   updateModalButtonState();
 }
 
@@ -1480,8 +1506,6 @@ function removeModalVideo() {
   modalVideoSource.src = '';
   modalFileInput.value = '';
   selectedModalVideo = null;
-  
-  // Modal buton durumunu güncelle
   updateModalButtonState();
 }
 
@@ -1529,8 +1553,6 @@ document.addEventListener('DOMContentLoaded', function() {
           videoPreview.style.display = 'block';
         };
         reader.readAsDataURL(file);
-        
-        // Buton durumunu güncelle
         updateButtonState();
       }
     });
@@ -1549,8 +1571,6 @@ document.addEventListener('DOMContentLoaded', function() {
           modalImagePreview.style.display = 'block';
         };
         reader.readAsDataURL(file);
-        
-        // Modal buton durumunu güncelle
         updateModalButtonState();
       }
     });
@@ -1573,8 +1593,6 @@ document.addEventListener('DOMContentLoaded', function() {
           modalVideoPreview.style.display = 'block';
         };
         reader.readAsDataURL(file);
-        
-        // Modal buton durumunu güncelle
         updateModalButtonState();
       }
     });
@@ -2526,4 +2544,133 @@ function showNotificationsLoading() {
   notificationsList.innerHTML = '';
   notificationsEmpty.style.display = 'none';
   notificationsLoading.style.display = 'block';
+}
+function initializeMobileProfileMenu() {
+  const profileSection = document.querySelector('.profile-section');
+  const mobileProfileTrigger = document.querySelector('.mobile-profile-trigger');
+  const mobileProfileMenu = document.getElementById('mobileProfileMenu');
+  const mobileProfileOverlay = document.getElementById('mobileProfileOverlay');
+  const mobileProfileClose = document.getElementById('mobileProfileClose');
+  const mobileLogoutBtn = document.getElementById('mobileLogoutBtn');
+  
+  if (!mobileProfileMenu || !mobileProfileOverlay || !mobileProfileClose) {
+    return;
+  }
+  if (profileSection) {
+    profileSection.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (window.innerWidth <= 500) {
+        openMobileProfileMenu();
+      }
+    });
+  }
+  if (mobileProfileTrigger) {
+    mobileProfileTrigger.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      openMobileProfileMenu();
+    });
+  }
+  const mobileMenuItems = mobileProfileMenu.querySelectorAll('.mobile-profile-menu-item');
+  mobileMenuItems.forEach(item => {
+    item.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const action = this.getAttribute('data-action');
+      
+      switch(action) {
+        case 'home':
+          closeMobileProfileMenu();
+          showHomeContent();
+          break;
+        case 'notifications':
+          closeMobileProfileMenu();
+          showNotificationsContent();
+          break;
+        case 'profile':
+          closeMobileProfileMenu();
+          showProfileContent();
+          break;
+        case 'logout':
+          handleLogout();
+          break;
+        default:
+          closeMobileProfileMenu();
+          break;
+      }
+    });
+  });
+  
+  mobileProfileClose.addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    closeMobileProfileMenu();
+  });
+  mobileProfileOverlay.addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    closeMobileProfileMenu();
+  });
+  
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && mobileProfileMenu.classList.contains('open')) {
+      closeMobileProfileMenu();
+    }
+  });
+}
+
+function openMobileProfileMenu() {
+  const mobileProfileMenu = document.getElementById('mobileProfileMenu');
+  const mobileProfileOverlay = document.getElementById('mobileProfileOverlay');
+  
+  if (mobileProfileMenu && mobileProfileOverlay) {
+    mobileProfileMenu.classList.add('open');
+    mobileProfileOverlay.classList.add('open');
+    document.body.style.overflow = 'hidden'; // Scrolling'i engelle
+  }
+}
+
+function closeMobileProfileMenu() {
+  const mobileProfileMenu = document.getElementById('mobileProfileMenu');
+  const mobileProfileOverlay = document.getElementById('mobileProfileOverlay');
+  
+  if (mobileProfileMenu && mobileProfileOverlay) {
+    mobileProfileMenu.classList.remove('open');
+    mobileProfileOverlay.classList.remove('open');
+    document.body.style.overflow = ''; // Scrolling'i geri aç
+  }
+}
+window.addEventListener('resize', function() {
+  if (window.innerWidth > 500) {
+    closeMobileProfileMenu();
+  }
+});
+
+// Logout fonksiyonu
+function handleLogout() {
+  // LocalStorage'ı temizle
+  localStorage.removeItem('user');
+  localStorage.removeItem('currentUserId');
+  localStorage.removeItem('authToken');
+  
+  // Mobile menüyü kapat
+  closeMobileProfileMenu();
+  
+  // Login sayfasına yönlendir
+  window.location.href = 'Login.html';
+}
+
+// Mobile back button'ları başlat
+function initializeMobileBackButtons() {
+  const notificationsMobileBack = document.getElementById('notificationsMobileBack');
+  
+  if (notificationsMobileBack) {
+    notificationsMobileBack.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      showHomeContent();
+    });
+  }
 }
