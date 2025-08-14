@@ -1,3 +1,42 @@
+// Sayfa yüklendiğinde login kontrolü
+(function() {
+  const user = localStorage.getItem('user');
+  if (!user) {
+    window.location.href = 'Login.html';
+  }
+})();
+
+// Authentication kontrolü fonksiyonu
+function checkAuthentication() {
+  const user = localStorage.getItem('user');
+  
+  // Eğer kullanıcı bilgisi yoksa login sayfasına yönlendir
+  if (!user) {
+    window.location.href = 'Login.html';
+    return false;
+  }
+  
+  try {
+    const userData = JSON.parse(user);
+    // Kullanıcı verisi geçersizse login sayfasına yönlendir
+    if (!userData || !userData._id) {
+      localStorage.removeItem('user');
+      localStorage.removeItem('currentUserId');
+      window.location.href = 'Login.html';
+      return false;
+    }
+  } catch (error) {
+    // JSON parse hatası varsa login sayfasına yönlendir
+    localStorage.removeItem('user');
+    localStorage.removeItem('currentUserId');
+    window.location.href = 'Login.html';
+    return false;
+  }
+  
+  return true;
+}
+
+// Authentication başarılıysa normal şekilde devam et
 let tweetInput, modalTweetInput, tweetList, tweetModal, tweetTemplate, profileTemplate;
 let postButton, modalPostButton, closeModalBtn, postButtonMain;
 let tweetDropdownsInitialized = false; // Tweet dropdown event listener'larının kurulup kurulmadığını takip et
@@ -156,6 +195,11 @@ function createFollowItem(user) {
 }
 
 document.addEventListener("DOMContentLoaded", function() {
+  // Tekrar login kontrolü yap (güvenlik için)
+  if (!checkAuthentication()) {
+    return;
+  }
+  
   tweetInput = document.getElementById('tweetInput');
   modalTweetInput = document.getElementById('modalTweetInput');
   tweetList = document.getElementById('tweetList');
