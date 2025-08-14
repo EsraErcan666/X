@@ -1,3 +1,8 @@
+// API adresini otomatik belirle
+const API_URL = window.location.hostname === 'localhost' 
+  ? 'http://localhost:3000' 
+  : window.location.origin;
+
 // Sayfa yüklendiğinde login kontrolü
 (function() {
   const user = localStorage.getItem('user');
@@ -78,7 +83,7 @@ let tweets = [];
 // Tweet'leri veritabanından yükle
 async function loadTweets() {
   try {
-    const response = await fetch('http://localhost:3000/api/tweets');
+    const response = await fetch(`${API_URL}/api/tweets`);
     const data = await response.json();
     
     if (data.success) {
@@ -131,7 +136,8 @@ function formatTimestamp(timestamp) {
 
 async function loadTopUsers() {
   try {
-    const response = await fetch('http://localhost:3000/api/top-users');
+    const response = await fetch(`${API_URL}/api/top-users`);	
+
     const data = await response.json();
     
     if (data.success && data.users.length > 0) {
@@ -351,7 +357,7 @@ async function loadUserTweets() {
   if (!user || !user._id) return;
 
   try {
-    const response = await fetch(`http://localhost:3000/api/tweets/user/${user._id}`);
+    const response = await fetch(`${API_URL}/api/tweets/user/${user._id}`);
     const data = await response.json();
     
     if (data.success) {
@@ -497,7 +503,7 @@ function loadUserProfile() {
     userId = user._id;
     localStorage.setItem('currentUserId', userId);
     
-    fetch(`http://localhost:3000/api/user/${userId}`) 
+    fetch(`${API_URL}/api/user/${userId}`) 
       .then(response => response.json())
       .then(data => {
         if (data.success) {
@@ -754,7 +760,7 @@ function saveProfile() {
   
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const userId = user._id || localStorage.getItem('currentUserId') || '507f1f77bcf86cd799439011';
-  fetch(`http://localhost:3000/api/user/${userId}`, { 
+  fetch(`${API_URL}/api/user/${userId}`, { 
     method: 'PUT',
     body: formData
   })
@@ -1052,7 +1058,7 @@ async function saveTweetToDatabase(content, userId, input, fromModal, imageFile 
       formData.append('video', videoFile);
     }
 
-    const response = await fetch('http://localhost:3000/api/tweets', {
+    const response = await fetch(`${API_URL}/api/tweets`, {
       method: 'POST',
       body: formData
     });
@@ -1206,7 +1212,7 @@ async function likeTweet(id) {
   }
 
   try {
-    const response = await fetch(`http://localhost:3000/api/tweets/${id}/like`, {
+    const response = await fetch(`${API_URL}/api/tweets/${id}/like`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -1377,7 +1383,7 @@ function loadSidebarUserInfo() {
     userId = user._id;
     localStorage.setItem('currentUserId', userId);
     
-    fetch(`http://localhost:3000/api/user/${userId}`)
+    fetch(`${API_URL}/api/user/${userId}`)
       .then(response => response.json())
       .then(data => {
         if (data.success) {
@@ -1774,7 +1780,7 @@ async function postComment() {
       formData.append('image', selectedCommentImage);
     }
     
-    const response = await fetch('http://localhost:3000/api/comments', {
+    const response = await fetch(`${API_URL}/api/comments`, {
       method: 'POST',
       body: formData
     });
@@ -1823,7 +1829,7 @@ async function loadComments(tweetId) {
   commentsList.innerHTML = '';
   
   try {
-    const response = await fetch(`http://localhost:3000/api/comments/${tweetId}`);
+    const response = await fetch(`${API_URL}/api/comments/${tweetId}`);
     const data = await response.json();
     
     commentsLoading.style.display = 'none';
@@ -1921,7 +1927,7 @@ async function deleteComment(commentId) {
   }
   
   try {
-    const response = await fetch(`http://localhost:3000/api/comments/${commentId}`, {
+    const response = await fetch(`${API_URL}/api/comments/${commentId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json'
@@ -1961,7 +1967,7 @@ async function loadLikedTweets() {
       return;
     }
 
-    const response = await fetch(`http://localhost:3000/api/user/${user._id}/liked-tweets`);
+    const response = await fetch(`${API_URL}/api/user/${user._id}/liked-tweets`);
     const data = await response.json();
     
     if (data.success) {
@@ -2022,7 +2028,7 @@ async function loadUserPosts() {
       return;
     }
 
-    const response = await fetch(`http://localhost:3000/api/user/${user._id}/tweets`);
+    const response = await fetch(`${API_URL}/api/user/${user._id}/tweets`);
     const data = await response.json();
     
     if (data.success) {
@@ -2337,7 +2343,7 @@ async function deleteTweet(tweetId) {
       return;
     }
 
-    const response = await fetch(`http://localhost:3000/api/tweets/${tweetId}`, {
+    const response = await fetch(`${API_URL}/api/tweets/${tweetId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json'
@@ -2447,7 +2453,7 @@ async function loadNotifications() {
   }
   showNotificationsLoading();
   try {
-    const response = await fetch(`http://localhost:3000/api/notifications/${user._id}`);
+    const response = await fetch(`${API_URL}/api/notifications/${user._id}`);
     const data = await response.json();
     
     if (data.success && data.notifications.length > 0) {
@@ -2543,7 +2549,7 @@ function createNotificationElement(notification) {
 
 async function markNotificationAsRead(notificationId) {
   try {
-    await fetch(`http://localhost:3000/api/notifications/${notificationId}/read`, {
+    await fetch(`${API_URL}/api/notifications/${notificationId}/read`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
