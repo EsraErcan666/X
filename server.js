@@ -53,296 +53,7 @@ const upload = multer({
 });
 
 // Static files servis etme
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/images', express.static(path.join(__dirname, 'images')));
-
-// Eski fotoğrafları base64'e çevirme migration endpoint'i
-app.post('/api/migrate-media', async (req, res) => {
-  try {
-    console.log('Medya migration başlatılıyor...');
-    
-    // Eski formatdaki tweet'leri bul (image var ama imageMimeType yok)
-    const oldTweets = await Tweet.find({
-      $and: [
-        { image: { $exists: true, $ne: '' } },
-        { 
-          $or: [
-            { imageMimeType: { $exists: false } },
-            { imageMimeType: '' }
-          ]
-        }
-      ]
-    });
-
-    console.log(`${oldTweets.length} eski tweet bulundu`);
-    let convertedCount = 0;
-    let errorCount = 0;
-
-    for (const tweet of oldTweets) {
-      try {
-        if (tweet.image.startsWith('/uploads/')) {
-          const imagePath = path.join(__dirname, tweet.image);
-          
-          // Dosya var mı kontrol et
-          if (fs.existsSync(imagePath)) {
-            // Dosyayı oku ve base64'e çevir
-            const imageBuffer = fs.readFileSync(imagePath);
-            const base64Data = imageBuffer.toString('base64');
-            
-            // MIME type'ı dosya uzantısından belirle
-            const ext = path.extname(tweet.image).toLowerCase();
-            let mimeType = '';
-            
-            switch (ext) {
-              case '.jpg':
-              case '.jpeg':
-                mimeType = 'image/jpeg';
-                break;
-              case '.png':
-                mimeType = 'image/png';
-                break;
-              case '.gif':
-                mimeType = 'image/gif';
-                break;
-              default:
-                mimeType = 'image/jpeg';
-            }
-            
-            // Tweet'i güncelle
-            await Tweet.findByIdAndUpdate(tweet._id, {
-              image: base64Data,
-              imageMimeType: mimeType
-            });
-            
-            convertedCount++;
-            console.log(`Tweet ${tweet._id} dönüştürüldü`);
-          } else {
-            console.log(`Dosya bulunamadı: ${imagePath}`);
-            // Dosya yoksa image alanını temizle
-            await Tweet.findByIdAndUpdate(tweet._id, {
-              image: '',
-              imageMimeType: ''
-            });
-          }
-        }
-      } catch (error) {
-        console.error(`Tweet ${tweet._id} dönüştürülürken hata:`, error);
-        errorCount++;
-      }
-    }
-
-    // Video migration
-    const oldVideoTweets = await Tweet.find({
-      $and: [
-        { video: { $exists: true, $ne: '' } },
-        { 
-          $or: [
-            { videoMimeType: { $exists: false } },
-            { videoMimeType: '' }
-          ]
-        }
-      ]
-    });
-
-    console.log(`${oldVideoTweets.length} eski video tweet bulundu`);
-
-    for (const tweet of oldVideoTweets) {
-      try {
-        if (tweet.video.startsWith('/uploads/')) {
-          const videoPath = path.join(__dirname, tweet.video);
-          
-          if (fs.existsSync(videoPath)) {
-            const videoBuffer = fs.readFileSync(videoPath);
-            const base64Data = videoBuffer.toString('base64');
-            
-            const ext = path.extname(tweet.video).toLowerCase();
-            let mimeType = '';
-            
-            switch (ext) {
-              case '.mp4':
-                mimeType = 'video/mp4';
-                break;
-              case '.avi':
-                mimeType = 'video/avi';
-                break;
-              case '.mov':
-                mimeType = 'video/quicktime';
-                break;
-              default:
-                mimeType = 'video/mp4';
-            }
-            
-            await Tweet.findByIdAndUpdate(tweet._id, {
-              video: base64Data,
-              videoMimeType: mimeType
-            });
-            
-            convertedCount++;
-            console.log(`Video tweet ${tweet._id} dönüştürüldü`);
-          } else {
-            console.log(`Video dosyası bulunamadı: ${videoPath}`);
-            await Tweet.findByIdAndUpdate(tweet._id, {
-              video: '',
-              videoMimeType: ''
-            });
-          }
-        }
-      } catch (error) {
-        console.error(`Video tweet ${tweet._id} dönüştürülürken hata:`, error);
-        errorCount++;
-      }
-    }
-
-    res.json({
-      success: true,
-      message: 'Medya migration tamamlandı',
-      stats: {
-        totalProcessed: oldTweets.length + oldVideoTweets.length,
-        converted: convertedCount,
-        errors: errorCount
-      }
-    });
-
-  } catch (error) {
-    console.error('Migration hatası:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Migration sırasında hata oluştu',
-      error: error.message
-    });
-  }
-});
-
-// Kullanıcı profil migration endpoint'i (profil ve banner resimleri için)
-app.post('/api/migrate-user-media', async (req, res) => {
-  try {
-    console.log('Kullanıcı medya migration başlatılıyor...');
-    
-    // Eski formatdaki kullanıcıları bul (profileImage var ama data: ile başlamıyor)
-    const oldUsers = await User.find({
-      $or: [
-        {
-          $and: [
-            { profileImage: { $exists: true, $ne: '' } },
-            { profileImage: { $not: /^data:/ } }
-          ]
-        },
-        {
-          $and: [
-            { bannerImage: { $exists: true, $ne: '' } },
-            { bannerImage: { $not: /^data:/ } }
-          ]
-        }
-      ]
-    });
-
-    console.log(`${oldUsers.length} eski kullanıcı bulundu`);
-    let convertedCount = 0;
-    let errorCount = 0;
-
-    for (const user of oldUsers) {
-      try {
-        const updateData = {};
-        
-        // Profile image migration
-        if (user.profileImage && !user.profileImage.startsWith('data:') && user.profileImage.startsWith('/uploads/')) {
-          const imagePath = path.join(__dirname, user.profileImage);
-          
-          if (fs.existsSync(imagePath)) {
-            const imageBuffer = fs.readFileSync(imagePath);
-            const base64Data = imageBuffer.toString('base64');
-            
-            const ext = path.extname(user.profileImage).toLowerCase();
-            let mimeType = '';
-            
-            switch (ext) {
-              case '.jpg':
-              case '.jpeg':
-                mimeType = 'image/jpeg';
-                break;
-              case '.png':
-                mimeType = 'image/png';
-                break;
-              case '.gif':
-                mimeType = 'image/gif';
-                break;
-              default:
-                mimeType = 'image/jpeg';
-            }
-            
-            updateData.profileImage = `data:${mimeType};base64,${base64Data}`;
-            console.log(`Kullanıcı ${user._id} profil resmi dönüştürüldü`);
-          } else {
-            updateData.profileImage = '';
-            console.log(`Profil resmi dosyası bulunamadı: ${imagePath}`);
-          }
-        }
-        
-        // Banner image migration
-        if (user.bannerImage && !user.bannerImage.startsWith('data:') && user.bannerImage.startsWith('/uploads/')) {
-          const imagePath = path.join(__dirname, user.bannerImage);
-          
-          if (fs.existsSync(imagePath)) {
-            const imageBuffer = fs.readFileSync(imagePath);
-            const base64Data = imageBuffer.toString('base64');
-            
-            const ext = path.extname(user.bannerImage).toLowerCase();
-            let mimeType = '';
-            
-            switch (ext) {
-              case '.jpg':
-              case '.jpeg':
-                mimeType = 'image/jpeg';
-                break;
-              case '.png':
-                mimeType = 'image/png';
-                break;
-              case '.gif':
-                mimeType = 'image/gif';
-                break;
-              default:
-                mimeType = 'image/jpeg';
-            }
-            
-            updateData.bannerImage = `data:${mimeType};base64,${base64Data}`;
-            console.log(`Kullanıcı ${user._id} banner resmi dönüştürüldü`);
-          } else {
-            updateData.bannerImage = '';
-            console.log(`Banner resmi dosyası bulunamadı: ${imagePath}`);
-          }
-        }
-        
-        // Güncelleme varsa kaydet
-        if (Object.keys(updateData).length > 0) {
-          await User.findByIdAndUpdate(user._id, updateData);
-          convertedCount++;
-        }
-        
-      } catch (error) {
-        console.error(`Kullanıcı ${user._id} dönüştürülürken hata:`, error);
-        errorCount++;
-      }
-    }
-
-    res.json({
-      success: true,
-      message: 'Kullanıcı medya migration tamamlandı',
-      stats: {
-        totalProcessed: oldUsers.length,
-        converted: convertedCount,
-        errors: errorCount
-      }
-    });
-
-  } catch (error) {
-    console.error('Kullanıcı migration hatası:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Kullanıcı migration sırasında hata oluştu',
-      error: error.message
-    });
-  }
-});
 
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/xclone', {
   useNewUrlParser: true,
@@ -947,22 +658,6 @@ app.post('/api/tweets', upload.fields([
   }
 });
 
-// Medya URL'si oluşturma helper fonksiyonu
-function formatMediaUrl(mediaData, mimeType) {
-  if (!mediaData) return '';
-  
-  // Yeni sistem: Base64 + MIME type
-  if (mimeType && mediaData.length > 100) { // Base64 uzun olur
-    return `data:${mimeType};base64,${mediaData}`;
-  }
-  // Eski sistem: Dosya yolu (backward compatibility)
-  else if (mediaData.startsWith('/uploads/')) {
-    return mediaData;
-  }
-  
-  return '';
-}
-
 // Tüm tweetleri getirme endpointi
 app.get('/api/tweets', async (req, res) => {
   try {
@@ -976,23 +671,37 @@ app.get('/api/tweets', async (req, res) => {
       .skip(skip)
       .limit(limit);
 
-    const formattedTweets = tweets.map(tweet => ({
-      _id: tweet._id,
-      content: tweet.content,
-      image: formatMediaUrl(tweet.image, tweet.imageMimeType),
-      video: formatMediaUrl(tweet.video, tweet.videoMimeType),
-      likes: tweet.likes,
-      retweets: tweet.retweets,
-      comments: tweet.comments,
-      views: tweet.views,
-      created_at: tweet.created_at,
-      user: {
-        _id: tweet.userId._id,
-        username: tweet.userId.username,
-        displayName: tweet.userId.displayName,
-        profileImage: tweet.userId.profileImage
+    const formattedTweets = tweets.map(tweet => {
+      // Medya verilerini data URL formatına çevir
+      let imageUrl = '';
+      let videoUrl = '';
+      
+      if (tweet.image && tweet.imageMimeType) {
+        imageUrl = `data:${tweet.imageMimeType};base64,${tweet.image}`;
       }
-    }));
+      
+      if (tweet.video && tweet.videoMimeType) {
+        videoUrl = `data:${tweet.videoMimeType};base64,${tweet.video}`;
+      }
+      
+      return {
+        _id: tweet._id,
+        content: tweet.content,
+        image: imageUrl,
+        video: videoUrl,
+        likes: tweet.likes,
+        retweets: tweet.retweets,
+        comments: tweet.comments,
+        views: tweet.views,
+        created_at: tweet.created_at,
+        user: {
+          _id: tweet.userId._id,
+          username: tweet.userId.username,
+          displayName: tweet.userId.displayName,
+          profileImage: tweet.userId.profileImage
+        }
+      };
+    });
 
     res.json({
       success: true,
@@ -1027,23 +736,37 @@ app.get('/api/tweets/user/:userId', async (req, res) => {
       .skip(skip)
       .limit(limit);
 
-    const formattedTweets = tweets.map(tweet => ({
-      _id: tweet._id,
-      content: tweet.content,
-      image: formatMediaUrl(tweet.image, tweet.imageMimeType),
-      video: formatMediaUrl(tweet.video, tweet.videoMimeType),
-      likes: tweet.likes,
-      retweets: tweet.retweets,
-      comments: tweet.comments,
-      views: tweet.views,
-      created_at: tweet.created_at,
-      user: {
-        _id: tweet.userId._id,
-        username: tweet.userId.username,
-        displayName: tweet.userId.displayName,
-        profileImage: tweet.userId.profileImage
+    const formattedTweets = tweets.map(tweet => {
+      // Medya verilerini data URL formatına çevir
+      let imageUrl = '';
+      let videoUrl = '';
+      
+      if (tweet.image && tweet.imageMimeType) {
+        imageUrl = `data:${tweet.imageMimeType};base64,${tweet.image}`;
       }
-    }));
+      
+      if (tweet.video && tweet.videoMimeType) {
+        videoUrl = `data:${tweet.videoMimeType};base64,${tweet.video}`;
+      }
+      
+      return {
+        _id: tweet._id,
+        content: tweet.content,
+        image: imageUrl,
+        video: videoUrl,
+        likes: tweet.likes,
+        retweets: tweet.retweets,
+        comments: tweet.comments,
+        views: tweet.views,
+        created_at: tweet.created_at,
+        user: {
+          _id: tweet.userId._id,
+          username: tweet.userId.username,
+          displayName: tweet.userId.displayName,
+          profileImage: tweet.userId.profileImage
+        }
+      };
+    });
 
     res.json({
       success: true,

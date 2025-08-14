@@ -3,82 +3,6 @@ const API_URL = window.location.hostname === 'localhost'
   ? 'http://localhost:3000' 
   : window.location.origin;
 
-// Medya URL'si formatına çevirme helper fonksiyonu
-function formatImageUrl(imageData) {
-  if (!imageData || imageData.trim() === '') return '';
-  
-  // Data URL ise doğrudan kullan
-  if (imageData.startsWith('data:')) {
-    return imageData;
-  }
-  // Eski dosya yolu ise API_URL ile birleştir
-  else if (imageData.startsWith('/uploads/')) {
-    return `${API_URL}${imageData}`;
-  }
-  // HTTP URL ise doğrudan kullan
-  else if (imageData.startsWith('http')) {
-    return imageData;
-  }
-  
-  return imageData;
-}
-
-// Medya migration fonksiyonu (geliştirici konsolundan çağrılabilir)
-window.migrateOldMedia = async function() {
-  try {
-    console.log('Eski medya dosyaları migration başlatılıyor...');
-    
-    const response = await fetch(`${API_URL}/api/migrate-media`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    const result = await response.json();
-    
-    if (result.success) {
-      console.log('Migration başarılı:', result);
-      alert(`Migration tamamlandı!\nİşlenen: ${result.stats.totalProcessed}\nDönüştürülen: ${result.stats.converted}\nHata: ${result.stats.errors}`);
-      location.reload(); // Sayfayı yenile
-    } else {
-      console.error('Migration hatası:', result);
-      alert('Migration sırasında hata oluştu: ' + result.message);
-    }
-  } catch (error) {
-    console.error('Migration request hatası:', error);
-    alert('Migration request sırasında hata oluştu');
-  }
-};
-
-// Kullanıcı profil migration fonksiyonu (geliştirici konsolundan çağrılabilir)
-window.migrateUserMedia = async function() {
-  try {
-    console.log('Kullanıcı profil medyası migration başlatılıyor...');
-    
-    const response = await fetch(`${API_URL}/api/migrate-user-media`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    const result = await response.json();
-    
-    if (result.success) {
-      console.log('Kullanıcı migration başarılı:', result);
-      alert(`Kullanıcı migration tamamlandı!\nİşlenen: ${result.stats.totalProcessed}\nDönüştürülen: ${result.stats.converted}\nHata: ${result.stats.errors}`);
-      location.reload(); // Sayfayı yenile
-    } else {
-      console.error('Kullanıcı migration hatası:', result);
-      alert('Kullanıcı migration sırasında hata oluştu: ' + result.message);
-    }
-  } catch (error) {
-    console.error('Kullanıcı migration request hatası:', error);
-    alert('Kullanıcı migration request sırasında hata oluştu');
-  }
-};
-
 // Sayfa yüklendiğinde login kontrolü
 (function() {
   const user = localStorage.getItem('user');
@@ -256,7 +180,9 @@ function createFollowItem(user) {
   // Profil resmi URL'sini doğru şekilde oluştur
   let profileImageSrc = '';
   if (user.profileImage && user.profileImage.trim() !== '') {
-    profileImageSrc = formatImageUrl(user.profileImage);
+    profileImageSrc = user.profileImage.startsWith('http') 
+      ? user.profileImage 
+      : `${API_URL}${user.profileImage}`;
   } else {
     // Varsayılan avatar göster
     profileImageSrc = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23657786"/%3E%3C/svg%3E';
@@ -487,7 +413,9 @@ function displayUserTweets(userTweets) {
     // Avatar
     const avatar = tweetEl.querySelector('.avatar');
     if (tweet.user.profileImage && tweet.user.profileImage.trim() !== '') {
-      const avatarUrl = formatImageUrl(tweet.user.profileImage);
+      const avatarUrl = tweet.user.profileImage.startsWith('http') 
+        ? tweet.user.profileImage 
+        : `${API_URL}${tweet.user.profileImage}`;
       avatar.src = avatarUrl;
     } else {
       avatar.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23fff"/%3E%3C/svg%3E';
@@ -512,14 +440,7 @@ function displayUserTweets(userTweets) {
     if (tweet.image && tweet.image.trim() !== '') {
       imageDiv.style.display = 'block';
       const imageImg = imageDiv.querySelector('img');
-      // Data URL veya dosya yolu olabilir
-      if (tweet.image.startsWith('data:')) {
-        imageImg.src = tweet.image; // Data URL
-      } else if (tweet.image.startsWith('/uploads/')) {
-        imageImg.src = `${API_URL}${tweet.image}`; // Eski dosya yolu
-      } else {
-        imageImg.src = tweet.image; // HTTP URL
-      }
+      imageImg.src = tweet.image; // Data URL olarak geldiği için doğrudan kullan
       imageImg.alt = 'Tweet image';
     } else {
       imageDiv.style.display = 'none';
@@ -531,14 +452,7 @@ function displayUserTweets(userTweets) {
       videoDiv.style.display = 'block';
       const videoEl = videoDiv.querySelector('video');
       const videoSource = videoEl.querySelector('source');
-      // Data URL veya dosya yolu olabilir
-      if (tweet.video.startsWith('data:')) {
-        videoSource.src = tweet.video; // Data URL
-      } else if (tweet.video.startsWith('/uploads/')) {
-        videoSource.src = `${API_URL}${tweet.video}`; // Eski dosya yolu
-      } else {
-        videoSource.src = tweet.video; // HTTP URL
-      }
+      videoSource.src = tweet.video; // Data URL olarak geldiği için doğrudan kullan
       videoSource.type = getVideoMimeType(tweet.video);
       videoEl.load(); // Video'yu yeniden yükle
     } else {
@@ -623,13 +537,17 @@ function populateEditForm(user) {
   if (editWebsite) editWebsite.value = user.website || '';
   
   if (avatarPreview && user.profileImage) {
-    const fullImageUrl = formatImageUrl(user.profileImage);
+    const fullImageUrl = user.profileImage.startsWith('http') 
+      ? user.profileImage 
+      : `${API_URL}${user.profileImage}`;
     console.log('Avatar önizleme güncelleniyor:', fullImageUrl);
     avatarPreview.src = fullImageUrl;
   }
   
   if (currentBanner && user.bannerImage) {
-    const fullBannerUrl = formatImageUrl(user.bannerImage);
+    const fullBannerUrl = user.bannerImage.startsWith('http') 
+      ? user.bannerImage 
+      : `${API_URL}${user.bannerImage}`;
     console.log('Banner önizleme güncelleniyor:', fullBannerUrl);
     currentBanner.style.backgroundImage = `url(${fullBannerUrl})`;
     currentBanner.style.backgroundSize = 'cover';
@@ -1385,14 +1303,7 @@ function renderTweets() {
     if (tweet.image && tweet.image.trim() !== '') {
       imageDiv.style.display = 'block';
       const imageImg = imageDiv.querySelector('img');
-      // Data URL veya dosya yolu olabilir
-      if (tweet.image.startsWith('data:')) {
-        imageImg.src = tweet.image; // Data URL
-      } else if (tweet.image.startsWith('/uploads/')) {
-        imageImg.src = `${API_URL}${tweet.image}`; // Eski dosya yolu
-      } else {
-        imageImg.src = tweet.image; // HTTP URL
-      }
+      imageImg.src = tweet.image; // Data URL olarak geldiği için doğrudan kullan
       imageImg.alt = 'Tweet image';
     } else {
       imageDiv.style.display = 'none';
@@ -1406,14 +1317,7 @@ function renderTweets() {
       videoDiv.style.display = 'block';
       const videoEl = videoDiv.querySelector('video');
       const videoSource = videoEl.querySelector('source');
-      // Data URL veya dosya yolu olabilir
-      if (tweet.video.startsWith('data:')) {
-        videoSource.src = tweet.video; // Data URL
-      } else if (tweet.video.startsWith('/uploads/')) {
-        videoSource.src = `${API_URL}${tweet.video}`; // Eski dosya yolu
-      } else {
-        videoSource.src = tweet.video; // HTTP URL
-      }
+      videoSource.src = tweet.video; // Data URL olarak geldiği için doğrudan kullan
       console.log('renderTweets - Video URL:', tweet.video);
       videoSource.type = getVideoMimeType(tweet.video);
       console.log('renderTweets - Video MIME type:', getVideoMimeType(tweet.video));
@@ -1786,14 +1690,7 @@ function openCommentModal(tweetId) {
   // Tweet resmi varsa göster
   if (tweet.image && tweet.image.trim() !== '') {
     originalImage.style.display = 'block';
-    // Data URL veya dosya yolu olabilir
-    if (tweet.image.startsWith('data:')) {
-      originalImage.querySelector('img').src = tweet.image; // Data URL
-    } else if (tweet.image.startsWith('/uploads/')) {
-      originalImage.querySelector('img').src = `${API_URL}${tweet.image}`; // Eski dosya yolu
-    } else {
-      originalImage.querySelector('img').src = tweet.image; // HTTP URL
-    }
+    originalImage.querySelector('img').src = tweet.image; // Data URL olarak geldiği için doğrudan kullan
   } else {
     originalImage.style.display = 'none';
   }
@@ -2274,14 +2171,7 @@ function createTweetElement(tweet) {
   if (tweet.image && tweet.image.trim() !== '') {
     imageDiv.style.display = 'block';
     const imageImg = imageDiv.querySelector('img');
-    // Data URL veya dosya yolu olabilir
-    if (tweet.image.startsWith('data:')) {
-      imageImg.src = tweet.image; // Data URL
-    } else if (tweet.image.startsWith('/uploads/')) {
-      imageImg.src = `${API_URL}${tweet.image}`; // Eski dosya yolu
-    } else {
-      imageImg.src = tweet.image; // HTTP URL
-    }
+    imageImg.src = tweet.image; // Data URL olarak geldiği için doğrudan kullan
     imageImg.alt = 'Tweet image';
   } else {
     imageDiv.style.display = 'none';
@@ -2293,14 +2183,7 @@ function createTweetElement(tweet) {
     videoDiv.style.display = 'block';
     const videoEl = videoDiv.querySelector('video');
     const videoSource = videoEl.querySelector('source');
-    // Data URL veya dosya yolu olabilir
-    if (tweet.video.startsWith('data:')) {
-      videoSource.src = tweet.video; // Data URL
-    } else if (tweet.video.startsWith('/uploads/')) {
-      videoSource.src = `${API_URL}${tweet.video}`; // Eski dosya yolu
-    } else {
-      videoSource.src = tweet.video; // HTTP URL
-    }
+    videoSource.src = tweet.video; // Data URL olarak geldiği için doğrudan kullan
     videoSource.type = getVideoMimeType(tweet.video);
     videoEl.load(); // Video'yu yeniden yükle
   } else {
