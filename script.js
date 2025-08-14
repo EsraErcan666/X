@@ -207,7 +207,7 @@ function createFollowItem(user) {
       : `${API_URL}${user.profileImage}`;
   } else {
     // Varsayılan avatar göster
-    profileImageSrc = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23657786"/%3E%3C/svg%3E';
+    profileImageSrc = 'images/logo.png';
   }
   
   followItem.innerHTML = `
@@ -453,7 +453,7 @@ function displayUserTweets(userTweets) {
         : `${API_URL}${tweet.user.profileImage}`;
       avatar.src = avatarUrl;
     } else {
-      avatar.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23fff"/%3E%3C/svg%3E';
+      avatar.src = 'images/logo.png';
     }
     avatar.alt = tweet.user.displayName || tweet.user.username;
     
@@ -880,7 +880,7 @@ function updateProfileDisplay(user) {
     }
   } else {
     // Varsayılan avatar göster
-    const defaultAvatar = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23fff"/%3E%3C/svg%3E';
+    const defaultAvatar = 'images/logo.png';
     if (profileAvatar) {
       profileAvatar.src = defaultAvatar;
     }
@@ -1198,7 +1198,7 @@ function updateModalUserAvatar() {
     modalAvatar.src = avatarUrl;
   } else {
     // Varsayılan avatar
-    modalAvatar.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23fff"/%3E%3C/svg%3E';
+    modalAvatar.src = 'images/logo.png';
   }
   
   modalAvatar.alt = user?.displayName || user?.username || 'User Avatar';
@@ -1336,7 +1336,7 @@ function renderTweets() {
       avatar.src = avatarUrl;
     } else {
       // Varsayılan avatar
-      avatar.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23fff"/%3E%3C/svg%3E';
+      avatar.src = 'images/logo.png';
     }
     avatar.alt = tweet.displayName || '';
     
@@ -1487,8 +1487,8 @@ function showDefaultProfile() {
   if (profileName) profileName.textContent = 'Kullanıcı';
   if (profileUsername) profileUsername.textContent = '@kullanici';
   
-  const defaultAvatar = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23fff"/%3E%3C/svg%3E';
-  const defaultMobileAvatar = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"%3E%3Ccircle cx="16" cy="16" r="16" fill="%23e1e8ed"/%3E%3Cpath d="M16 6c2.65 0 4.8 2.15 4.8 4.8s-2.15 4.8-4.8 4.8-4.8-2.15-4.8-4.8S13.35 6 16 6zM16 19.2c-5.3 0-9.6 2.7-9.6 6V28h19.2v-2.8c0-3.3-4.3-6-9.6-6z" fill="%23fff"/%3E%3C/svg%3E';
+  const defaultAvatar = 'images/logo.png';
+  const defaultMobileAvatar = 'images/logo.png';
   
   if (sidebarAvatar) sidebarAvatar.src = defaultAvatar;
   if (mobileProfileAvatar) mobileProfileAvatar.src = defaultMobileAvatar;
@@ -1507,7 +1507,7 @@ function updateSidebarProfile(user) {
       sidebarAvatar.src = fullImageUrl;
     } else {
       // Varsayılan avatar göster
-      sidebarAvatar.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23fff"/%3E%3C/svg%3E';
+      sidebarAvatar.src = 'images/logo.png';
     }
   }
   
@@ -1518,7 +1518,7 @@ function updateSidebarProfile(user) {
         : `${API_URL}${user.profileImage}`;
       mobileProfileAvatar.src = fullImageUrl;
     } else {
-      mobileProfileAvatar.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"%3E%3Ccircle cx="16" cy="16" r="16" fill="%23e1e8ed"/%3E%3Cpath d="M16 6c2.65 0 4.8 2.15 4.8 4.8s-2.15 4.8-4.8 4.8-4.8-2.15-4.8-4.8S13.35 6 16 6zM16 19.2c-5.3 0-9.6 2.7-9.6 6V28h19.2v-2.8c0-3.3-4.3-6-9.6-6z" fill="%23fff"/%3E%3C/svg%3E';
+      mobileProfileAvatar.src = 'images/logo.png';
     }
   }
   
@@ -1529,7 +1529,7 @@ function updateSidebarProfile(user) {
         : `${API_URL}${user.profileImage}`;
       mobileMenuAvatar.src = fullImageUrl;
     } else {
-      mobileMenuAvatar.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23fff"/%3E%3C/svg%3E';
+      mobileMenuAvatar.src = 'images/logo.png';
     }
   }
   
@@ -1763,7 +1763,7 @@ function openCommentModal(tweetId) {
       : `http://localhost:${tweet.avatar}`;
     originalAvatar.src = avatarUrl;
   } else {
-    originalAvatar.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23fff"/%3E%3C/svg%3E';
+    originalAvatar.src = 'images/logo.png';
   }
   
   originalName.textContent = tweet.displayName;
@@ -1788,7 +1788,7 @@ function openCommentModal(tweetId) {
       : `${API_URL}${user.profileImage}`;
     commentAvatar.src = avatarUrl;
   } else {
-    commentAvatar.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23fff"/%3E%3C/svg%3E';
+    commentAvatar.src = 'images/logo.png';
   }
   
   commentModal.classList.add('active');
@@ -1930,7 +1930,7 @@ function displayComments(comments) {
     commentEl.dataset.commentId = comment._id;
     
     // Avatar
-    let avatarSrc = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23fff"/%3E%3C/svg%3E';
+    let avatarSrc = 'images/logo.png';
     if (comment.user.profileImage && comment.user.profileImage.trim() !== '') {
       avatarSrc = comment.user.profileImage.startsWith('http') 
         ? comment.user.profileImage 
@@ -2219,7 +2219,7 @@ function createTweetElement(tweet) {
     avatar.src = avatarUrl;
   } else {
     // Varsayılan avatar
-    avatar.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23fff"/%3E%3C/svg%3E';
+    avatar.src = 'images/logo.png';
   }
   avatar.alt = tweet.displayName || '';
   
@@ -2577,7 +2577,7 @@ function createNotificationElement(notification) {
     ? (notification.fromUser.profileImage.startsWith('http') 
         ? notification.fromUser.profileImage 
         : `${API_URL}${notification.fromUser.profileImage}`)
-    : 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"%3E%3Ccircle cx="16" cy="16" r="16" fill="%23e1e8ed"/%3E%3Cpath d="M16 6c2.65 0 4.8 2.15 4.8 4.8s-2.15 4.8-4.8 4.8-4.8-2.15-4.8-4.8S13.35 6 16 6zM16 19.2c-5.3 0-9.6 2.7-9.6 6v2.4h19.2v-2.4c0-3.3-4.3-6-9.6-6z" fill="%23657786"/%3E%3C/svg%3E';
+    : 'images/logo.png';
   
   notificationEl.innerHTML = `
     <div class="notification-icon ${iconColor}">

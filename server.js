@@ -20,13 +20,14 @@ app.use(cors({
         'https://x-c20s86vs-esra-ercans-projects.vercel.app',
         /\.vercel\.app$/
       ]
-    : ['http://localhost:3000', 'file://', 'null'],
+    : ['http://localhost:3000', 'http://127.0.0.1:3000', 'file://', 'null', '*'],
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 app.use(express.json());
 app.use(express.static('.'));
+app.use('/uploads', express.static('uploads'));
 
 // Vercel için memory storage kullan
 const storage = multer.memoryStorage();
@@ -469,7 +470,12 @@ app.put('/api/user/:userId', upload.fields([
         const oldImagePath = path.join(__dirname, user.profileImage);
         deleteFileIfExists(oldImagePath);
       }
-      updateData.profileImage = '/uploads/' + req.files.profileImage[0].filename;
+      
+      const profileImageFile = req.files.profileImage[0];
+      const profileImageFileName = `profileImage-${Date.now()}-${Math.round(Math.random() * 1E9)}.${profileImageFile.originalname.split('.').pop()}`;
+      const profileImagePath = path.join('uploads', profileImageFileName);
+      fs.writeFileSync(profileImagePath, profileImageFile.buffer);
+      updateData.profileImage = '/' + profileImagePath;
     }
 
     // Banner resmi yüklendiyse
@@ -479,7 +485,12 @@ app.put('/api/user/:userId', upload.fields([
         const oldBannerPath = path.join(__dirname, user.bannerImage);
         deleteFileIfExists(oldBannerPath);
       }
-      updateData.bannerImage = '/uploads/' + req.files.bannerImage[0].filename;
+      
+      const bannerImageFile = req.files.bannerImage[0];
+      const bannerImageFileName = `bannerImage-${Date.now()}-${Math.round(Math.random() * 1E9)}.${bannerImageFile.originalname.split('.').pop()}`;
+      const bannerImagePath = path.join('uploads', bannerImageFileName);
+      fs.writeFileSync(bannerImagePath, bannerImageFile.buffer);
+      updateData.bannerImage = '/' + bannerImagePath;
     }
 
     // Kullanıcıyı güncelle
@@ -595,29 +606,29 @@ app.post('/api/tweets', upload.fields([
       });
     }
 
-    // Dosyaları base64 olarak sakla
-    let imageData = '';
-    let videoData = '';
-    let imageMimeType = '';
-    let videoMimeType = '';
+    // Dosyaları uploads klasörüne kaydet
+    let imagePath = '';
+    let videoPath = '';
 
     if (req.files && req.files.image) {
-      imageData = req.files.image[0].buffer.toString('base64');
-      imageMimeType = req.files.image[0].mimetype;
+      const imageFile = req.files.image[0];
+      const imageFileName = `image-${Date.now()}-${Math.round(Math.random() * 1E9)}.${imageFile.originalname.split('.').pop()}`;
+      imagePath = path.join('uploads', imageFileName);
+      fs.writeFileSync(imagePath, imageFile.buffer);
     }
 
     if (req.files && req.files.video) {
-      videoData = req.files.video[0].buffer.toString('base64');
-      videoMimeType = req.files.video[0].mimetype;
+      const videoFile = req.files.video[0];
+      const videoFileName = `video-${Date.now()}-${Math.round(Math.random() * 1E9)}.${videoFile.originalname.split('.').pop()}`;
+      videoPath = path.join('uploads', videoFileName);
+      fs.writeFileSync(videoPath, videoFile.buffer);
     }
 
     const newTweet = new Tweet({
       content: sanitizedContent,
       userId: userId,
-      image: imageData,
-      video: videoData,
-      imageMimeType: imageMimeType,
-      videoMimeType: videoMimeType,
+      image: imagePath,
+      video: videoPath,
       views: 1 // İlk görüntüleme
     });
 
@@ -673,16 +684,16 @@ app.get('/api/tweets', async (req, res) => {
       .limit(limit);
 
     const formattedTweets = tweets.map(tweet => {
-      // Medya verilerini data URL formatına çevir
+      // Medya URL'lerini doğrudan yol olarak kullan
       let imageUrl = '';
       let videoUrl = '';
       
-      if (tweet.image && tweet.imageMimeType) {
-        imageUrl = `data:${tweet.imageMimeType};base64,${tweet.image}`;
+      if (tweet.image) {
+        imageUrl = `/${tweet.image}`;
       }
       
-      if (tweet.video && tweet.videoMimeType) {
-        videoUrl = `data:${tweet.videoMimeType};base64,${tweet.video}`;
+      if (tweet.video) {
+        videoUrl = `/${tweet.video}`;
       }
       
       // Kullanıcının bu tweet'i beğenip beğenmediğini kontrol et
@@ -747,16 +758,16 @@ app.get('/api/tweets/user/:userId', async (req, res) => {
       .limit(limit);
 
     const formattedTweets = tweets.map(tweet => {
-      // Medya verilerini data URL formatına çevir
+      // Medya URL'lerini doğrudan yol olarak kullan
       let imageUrl = '';
       let videoUrl = '';
       
-      if (tweet.image && tweet.imageMimeType) {
-        imageUrl = `data:${tweet.imageMimeType};base64,${tweet.image}`;
+      if (tweet.image) {
+        imageUrl = `/${tweet.image}`;
       }
       
-      if (tweet.video && tweet.videoMimeType) {
-        videoUrl = `data:${tweet.videoMimeType};base64,${tweet.video}`;
+      if (tweet.video) {
+        videoUrl = `/${tweet.video}`;
       }
       
       // Kullanıcının bu tweet'i beğenip beğenmediğini kontrol et
