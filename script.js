@@ -2862,16 +2862,22 @@ window.addEventListener('resize', function() {
 
 // Logout fonksiyonu
 function handleLogout() {
+  console.log('Logout işlemi başlatılıyor...');
+  
   // LocalStorage'ı temizle
   localStorage.removeItem('user');
   localStorage.removeItem('currentUserId');
   localStorage.removeItem('authToken');
   
+  console.log('LocalStorage temizlendi');
+  
   // Mobile menüyü kapat
   closeMobileProfileMenu();
   
-  // Login sayfasına yönlendir
-  window.location.href = 'Login.html';
+  // Login sayfasına yönlendir - "/" veya "/login" kullan
+  console.log('Login sayfasına yönlendiriliyor...');
+  
+  window.location.href = '/';
 }
 
 // Mobile back button'ları başlat
