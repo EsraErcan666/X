@@ -39,5 +39,10 @@
       "src": "/(.*)",
       "dest": "/Login.html"
     }
-  ]
+  ],
+  "functions": {
+    "server.js": {
+      "maxDuration": 30
+    }
+  }
 }

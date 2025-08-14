@@ -5,8 +5,16 @@ const bcrypt = require('bcryptjs');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const cloudinary = require('cloudinary').v2;
 const { User, Tweet, Comment, Notification } = require('./models/schemas');
 require('dotenv').config();
+
+// Cloudinary konfigürasyonu
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -18,44 +26,31 @@ app.use(cors({
         'https://x-tau-jet.vercel.app',
         'https://x-git-master-esra-ercans-projects.vercel.app', 
         'https://x-c20s86vs-esra-ercans-projects.vercel.app',
-        /\.vercel\.app$/
+        /\.vercel\.app$/,
+        /\.vercel\.com$/,
+        'https://x-esraercan666s-projects.vercel.app',
+        'https://x-pi-weld.vercel.app'
       ]
-    : ['http://localhost:3000', 'file://', 'null'],
+    : ['http://localhost:3000', 'http://127.0.0.1:3000', 'file://', 'null'],
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+  optionsSuccessStatus: 200
 }));
 app.use(express.json());
 app.use(express.static('.'));
 
-// Uploads klasörünü oluştur
-const uploadsDir = path.join(__dirname, 'uploads');
-const imagesDir = path.join(__dirname, 'images');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
-if (!fs.existsSync(imagesDir)) {
-  fs.mkdirSync(imagesDir, { recursive: true });
-}
-
-// Multer konfigürasyonu
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/');
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
+// Uploads klasörünü statik olarak servis et (mevcut resimler için)
+app.use('/uploads', express.static('uploads'));
+const storage = multer.memoryStorage();
 
 const upload = multer({ 
   storage: storage,
   limits: {
-    fileSize: 50 * 1024 * 1024 // 50MB limit (video dosyaları için)
+    fileSize: 50 * 1024 * 1024 // 50MB limit
   },
   fileFilter: (req, file, cb) => {
-    const allowedImageTypes = /jpeg|jpg|png|gif/;
+    const allowedImageTypes = /jpeg|jpg|png|gif|webp/;
     const allowedVideoTypes = /mp4|avi|mov|wmv|flv|webm|mkv|m4v/;
     const extname = path.extname(file.originalname).toLowerCase();
     
@@ -69,6 +64,28 @@ const upload = multer({
     }
   }
 });
+
+// Cloudinary'ye dosya yükleme fonksiyonu
+async function uploadToCloudinary(buffer, resourceType = 'auto', folder = 'xclone') {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        resource_type: resourceType,
+        folder: folder,
+        quality: 'auto',
+        fetch_format: 'auto'
+      },
+      (error, result) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(result);
+        }
+      }
+    );
+    uploadStream.end(buffer);
+  });
+}
 
 // Uploads klasörünü statik olarak servis et
 app.use('/uploads', express.static('uploads'));
@@ -482,22 +499,32 @@ app.put('/api/user/:userId', upload.fields([
 
     // Profil resmi yüklendiyse
     if (req.files && req.files.profileImage) {
-      // Eski profil resmini sil
-      if (user.profileImage) {
-        const oldImagePath = path.join(__dirname, user.profileImage);
-        deleteFileIfExists(oldImagePath);
+      try {
+        const profileImageResult = await uploadToCloudinary(
+          req.files.profileImage[0].buffer, 
+          'image', 
+          'xclone/profiles'
+        );
+        updateData.profileImage = profileImageResult.secure_url;
+        console.log('Profil resmi Cloudinary\'ye yüklendi:', profileImageResult.secure_url);
+      } catch (error) {
+        console.error('Profil resmi yükleme hatası:', error);
       }
-      updateData.profileImage = '/uploads/' + req.files.profileImage[0].filename;
     }
 
     // Banner resmi yüklendiyse
     if (req.files && req.files.bannerImage) {
-      // Eski banner resmini sil
-      if (user.bannerImage) {
-        const oldBannerPath = path.join(__dirname, user.bannerImage);
-        deleteFileIfExists(oldBannerPath);
+      try {
+        const bannerImageResult = await uploadToCloudinary(
+          req.files.bannerImage[0].buffer, 
+          'image', 
+          'xclone/banners'
+        );
+        updateData.bannerImage = bannerImageResult.secure_url;
+        console.log('Banner resmi Cloudinary\'ye yüklendi:', bannerImageResult.secure_url);
+      } catch (error) {
+        console.error('Banner resmi yükleme hatası:', error);
       }
-      updateData.bannerImage = '/uploads/' + req.files.bannerImage[0].filename;
     }
 
     // Kullanıcıyı güncelle
@@ -613,11 +640,44 @@ app.post('/api/tweets', upload.fields([
       });
     }
 
+    let imageUrl = '';
+    let videoUrl = '';
+
+    // Resim yükleme
+    if (req.files && req.files.image) {
+      try {
+        const imageResult = await uploadToCloudinary(
+          req.files.image[0].buffer, 
+          'image', 
+          'xclone/tweets'
+        );
+        imageUrl = imageResult.secure_url;
+        console.log('Resim Cloudinary\'ye yüklendi:', imageUrl);
+      } catch (error) {
+        console.error('Resim yükleme hatası:', error);
+      }
+    }
+
+    // Video yükleme
+    if (req.files && req.files.video) {
+      try {
+        const videoResult = await uploadToCloudinary(
+          req.files.video[0].buffer, 
+          'video', 
+          'xclone/tweets'
+        );
+        videoUrl = videoResult.secure_url;
+        console.log('Video Cloudinary\'ye yüklendi:', videoUrl);
+      } catch (error) {
+        console.error('Video yükleme hatası:', error);
+      }
+    }
+
     const newTweet = new Tweet({
       content: sanitizedContent,
       userId: userId,
-      image: req.files && req.files.image ? '/uploads/' + req.files.image[0].filename : '',
-      video: req.files && req.files.video ? '/uploads/' + req.files.video[0].filename : '',
+      image: imageUrl,
+      video: videoUrl,
       views: 1 // İlk görüntüleme
     });
 
@@ -901,11 +961,28 @@ app.post('/api/comments', upload.single('image'), async (req, res) => {
     }
 
     // Yorum oluştur
+    let imageUrl = '';
+    
+    // Resim yüklendiyse Cloudinary'ye yükle
+    if (req.file) {
+      try {
+        const imageResult = await uploadToCloudinary(
+          req.file.buffer, 
+          'image', 
+          'xclone/comments'
+        );
+        imageUrl = imageResult.secure_url;
+        console.log('Yorum resmi Cloudinary\'ye yüklendi:', imageUrl);
+      } catch (error) {
+        console.error('Yorum resmi yükleme hatası:', error);
+      }
+    }
+
     const newComment = new Comment({
       content: sanitizedContent,
       userId: userId,
       tweetId: tweetId,
-      image: req.file ? '/uploads/' + req.file.filename : ''
+      image: imageUrl
     });
 
     await newComment.save();

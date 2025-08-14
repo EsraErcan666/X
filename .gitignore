@@ -1,2 +1,8 @@
 .env
-node_modules/*
+node_modules/
+uploads/
+*.log
+.DS_Store
+.vscode/
+*.tmp
+*.temp

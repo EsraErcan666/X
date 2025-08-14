@@ -3,6 +3,26 @@ const API_URL = window.location.hostname === 'localhost'
   ? 'http://localhost:3000' 
   : window.location.origin;
 
+// Resim URL'sini doğru şekilde handle eden yardımcı fonksiyon
+function getImageUrl(imagePath) {
+  if (!imagePath || imagePath.trim() === '') {
+    return '';
+  }
+  
+  // Eğer URL zaten tam bir URL ise (http/https ile başlıyorsa) direkt döndür
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath;
+  }
+  
+  // Eğer relative path ise API_URL ile birleştir
+  if (imagePath.startsWith('/')) {
+    return `${API_URL}${imagePath}`;
+  }
+  
+  // Diğer durumlarda API_URL ile birleştir
+  return `${API_URL}/${imagePath}`;
+}
+
 // Sayfa yüklendiğinde login kontrolü
 (function() {
   const user = localStorage.getItem('user');
@@ -178,15 +198,8 @@ function createFollowItem(user) {
   const displayName = user.displayName || user.username;
   
   // Profil resmi URL'sini doğru şekilde oluştur
-  let profileImageSrc = '';
-  if (user.profileImage && user.profileImage.trim() !== '') {
-    profileImageSrc = user.profileImage.startsWith('http') 
-      ? user.profileImage 
-      : `${API_URL}${user.profileImage}`;
-  } else {
-    // Varsayılan avatar göster
-    profileImageSrc = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23657786"/%3E%3C/svg%3E';
-  }
+  const profileImageSrc = getImageUrl(user.profileImage) || 
+    'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23657786"/%3E%3C/svg%3E';
   
   followItem.innerHTML = `
     <img src="${profileImageSrc}" alt="${displayName}" class="avatar" />
@@ -412,14 +425,9 @@ function displayUserTweets(userTweets) {
     
     // Avatar
     const avatar = tweetEl.querySelector('.avatar');
-    if (tweet.user.profileImage && tweet.user.profileImage.trim() !== '') {
-      const avatarUrl = tweet.user.profileImage.startsWith('http') 
-        ? tweet.user.profileImage 
-        : `${API_URL}${tweet.user.profileImage}`;
-      avatar.src = avatarUrl;
-    } else {
-      avatar.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23fff"/%3E%3C/svg%3E';
-    }
+    const avatarUrl = getImageUrl(tweet.user.profileImage) || 
+      'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23fff"/%3E%3C/svg%3E';
+    avatar.src = avatarUrl;
     avatar.alt = tweet.user.displayName || tweet.user.username;
     
     // İsim
@@ -440,9 +448,7 @@ function displayUserTweets(userTweets) {
     if (tweet.image && tweet.image.trim() !== '') {
       imageDiv.style.display = 'block';
       const imageImg = imageDiv.querySelector('img');
-      const imageUrl = tweet.image.startsWith('http') 
-        ? tweet.image 
-        : `${API_URL}${tweet.image}`;
+      const imageUrl = getImageUrl(tweet.image);
       imageImg.src = imageUrl;
       imageImg.alt = 'Tweet image';
     } else {
@@ -455,9 +461,7 @@ function displayUserTweets(userTweets) {
       videoDiv.style.display = 'block';
       const videoEl = videoDiv.querySelector('video');
       const videoSource = videoEl.querySelector('source');
-      const videoUrl = tweet.video.startsWith('http') 
-        ? tweet.video 
-        : `${API_URL}${tweet.video}`;
+      const videoUrl = getImageUrl(tweet.video); // Video da aynı helper ile handle edilebilir
       videoSource.src = videoUrl;
       videoSource.type = getVideoMimeType(tweet.video);
       videoEl.load(); // Video'yu yeniden yükle
@@ -543,17 +547,13 @@ function populateEditForm(user) {
   if (editWebsite) editWebsite.value = user.website || '';
   
   if (avatarPreview && user.profileImage) {
-    const fullImageUrl = user.profileImage.startsWith('http') 
-      ? user.profileImage 
-      : `${API_URL}${user.profileImage}`;
+    const fullImageUrl = getImageUrl(user.profileImage);
     console.log('Avatar önizleme güncelleniyor:', fullImageUrl);
     avatarPreview.src = fullImageUrl;
   }
   
   if (currentBanner && user.bannerImage) {
-    const fullBannerUrl = user.bannerImage.startsWith('http') 
-      ? user.bannerImage 
-      : `${API_URL}${user.bannerImage}`;
+    const fullBannerUrl = getImageUrl(user.bannerImage);
     console.log('Banner önizleme güncelleniyor:', fullBannerUrl);
     currentBanner.style.backgroundImage = `url(${fullBannerUrl})`;
     currentBanner.style.backgroundSize = 'cover';
@@ -826,35 +826,21 @@ function updateProfileDisplay(user) {
   const profileAvatar = document.querySelector('.profile-avatar-large img');
   const sidebarAvatar = document.querySelector('.profile-avatar');
   
-  if (user.profileImage && user.profileImage.trim() !== '') {
-    const fullImageUrl = user.profileImage.startsWith('http') 
-      ? user.profileImage 
-      : `${API_URL}${user.profileImage}`;
+  const profileImageUrl = getImageUrl(user.profileImage) || 
+    'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23fff"/%3E%3C/svg%3E';
       
-    if (profileAvatar) {
-      profileAvatar.src = fullImageUrl;
-    }
-    if (sidebarAvatar) {
-      sidebarAvatar.src = fullImageUrl;
-    }
-  } else {
-    // Varsayılan avatar göster
-    const defaultAvatar = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23fff"/%3E%3C/svg%3E';
-    if (profileAvatar) {
-      profileAvatar.src = defaultAvatar;
-    }
-    if (sidebarAvatar) {
-      sidebarAvatar.src = defaultAvatar;
-    }
+  if (profileAvatar) {
+    profileAvatar.src = profileImageUrl;
+  }
+  if (sidebarAvatar) {
+    sidebarAvatar.src = profileImageUrl;
   }
   
   // Banner resmi güncelle veya temizle
   const bannerImage = document.querySelector('.banner-image');
   if (bannerImage) {
     if (user.bannerImage && user.bannerImage.trim() !== '') {
-      const fullBannerUrl = user.bannerImage.startsWith('http') 
-        ? user.bannerImage 
-        : `${API_URL}${user.bannerImage}`;
+      const fullBannerUrl = getImageUrl(user.bannerImage);
       bannerImage.style.backgroundImage = `url(${fullBannerUrl})`;
       bannerImage.style.backgroundSize = 'cover';
       bannerImage.style.backgroundPosition = 'center';
@@ -1150,16 +1136,9 @@ function updateModalUserAvatar() {
   if (!modalAvatar) return;
   
   const user = JSON.parse(localStorage.getItem('user'));
-  if (user && user.profileImage && user.profileImage.trim() !== '') {
-    const avatarUrl = user.profileImage.startsWith('http') 
-      ? user.profileImage 
-      : `${API_URL}${user.profileImage}`;
-    modalAvatar.src = avatarUrl;
-  } else {
-    // Varsayılan avatar
-    modalAvatar.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23fff"/%3E%3C/svg%3E';
-  }
-  
+  const avatarUrl = getImageUrl(user?.profileImage) || 
+    'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23fff"/%3E%3C/svg%3E';
+  modalAvatar.src = avatarUrl;
   modalAvatar.alt = user?.displayName || user?.username || 'User Avatar';
 }
 
@@ -1428,37 +1407,21 @@ function updateSidebarProfile(user) {
   const mobileMenuAvatar = document.getElementById('mobileProfileAvatar');
   
   if (sidebarAvatar) {
-    if (user.profileImage) {
-      const fullImageUrl = user.profileImage.startsWith('http') 
-        ? user.profileImage 
-        : `${API_URL}${user.profileImage}`;
-      sidebarAvatar.src = fullImageUrl;
-    } else {
-      // Varsayılan avatar göster
-      sidebarAvatar.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23fff"/%3E%3C/svg%3E';
-    }
+    const sidebarAvatarUrl = getImageUrl(user.profileImage) || 
+      'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23fff"/%3E%3C/svg%3E';
+    sidebarAvatar.src = sidebarAvatarUrl;
   }
   
   if (mobileProfileAvatar) {
-    if (user.profileImage) {
-      const fullImageUrl = user.profileImage.startsWith('http') 
-        ? user.profileImage 
-        : `${API_URL}${user.profileImage}`;
-      mobileProfileAvatar.src = fullImageUrl;
-    } else {
-      mobileProfileAvatar.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"%3E%3Ccircle cx="16" cy="16" r="16" fill="%23e1e8ed"/%3E%3Cpath d="M16 6c2.65 0 4.8 2.15 4.8 4.8s-2.15 4.8-4.8 4.8-4.8-2.15-4.8-4.8S13.35 6 16 6zM16 19.2c-5.3 0-9.6 2.7-9.6 6V28h19.2v-2.8c0-3.3-4.3-6-9.6-6z" fill="%23fff"/%3E%3C/svg%3E';
-    }
+    const mobileAvatarUrl = getImageUrl(user.profileImage) || 
+      'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"%3E%3Ccircle cx="16" cy="16" r="16" fill="%23e1e8ed"/%3E%3Cpath d="M16 6c2.65 0 4.8 2.15 4.8 4.8s-2.15 4.8-4.8 4.8-4.8-2.15-4.8-4.8S13.35 6 16 6zM16 19.2c-5.3 0-9.6 2.7-9.6 6V28h19.2v-2.8c0-3.3-4.3-6-9.6-6z" fill="%23fff"/%3E%3C/svg%3E';
+    mobileProfileAvatar.src = mobileAvatarUrl;
   }
   
   if (mobileMenuAvatar) {
-    if (user.profileImage) {
-      const fullImageUrl = user.profileImage.startsWith('http') 
-        ? user.profileImage 
-        : `${API_URL}${user.profileImage}`;
-      mobileMenuAvatar.src = fullImageUrl;
-    } else {
-      mobileMenuAvatar.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23fff"/%3E%3C/svg%3E';
-    }
+    const mobileMenuAvatarUrl = getImageUrl(user.profileImage) || 
+      'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23fff"/%3E%3C/svg%3E';
+    mobileMenuAvatar.src = mobileMenuAvatarUrl;
   }
   
   const profileName = document.querySelector('.profile-name');
@@ -1713,14 +1676,9 @@ function openCommentModal(tweetId) {
   // Yorum yazacak kullanıcının avatarını ayarla
   const user = JSON.parse(localStorage.getItem('user'));
   const commentAvatar = document.querySelector('.comment-avatar');
-  if (user && user.profileImage && user.profileImage.trim() !== '') {
-    const avatarUrl = user.profileImage.startsWith('http') 
-      ? user.profileImage 
-      : `${API_URL}${user.profileImage}`;
-    commentAvatar.src = avatarUrl;
-  } else {
-    commentAvatar.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23fff"/%3E%3C/svg%3E';
-  }
+  const commentAvatarUrl = getImageUrl(user?.profileImage) || 
+    'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23fff"/%3E%3C/svg%3E';
+  commentAvatar.src = commentAvatarUrl;
   
   commentModal.classList.add('active');
   document.body.style.overflow = 'hidden';
@@ -1861,12 +1819,8 @@ function displayComments(comments) {
     commentEl.dataset.commentId = comment._id;
     
     // Avatar
-    let avatarSrc = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23fff"/%3E%3C/svg%3E';
-    if (comment.user.profileImage && comment.user.profileImage.trim() !== '') {
-      avatarSrc = comment.user.profileImage.startsWith('http') 
-        ? comment.user.profileImage 
-        : `${API_URL}${comment.user.profileImage}`;
-    }
+    const avatarSrc = getImageUrl(comment.user.profileImage) || 
+      'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23fff"/%3E%3C/svg%3E';
     
     // Zaman formatı
     const commentTime = formatTimestamp(comment.created_at);
@@ -1874,9 +1828,7 @@ function displayComments(comments) {
     // Yorum resmi
     let imageHtml = '';
     if (comment.image && comment.image.trim() !== '') {
-      const imageUrl = comment.image.startsWith('http') 
-        ? comment.image 
-        : `${API_URL}${comment.image}`;
+      const imageUrl = getImageUrl(comment.image);
       imageHtml = `
         <div class="comment-image">
           <img src="${imageUrl}" alt="Comment image" />
@@ -2510,11 +2462,8 @@ function createNotificationElement(notification) {
       actionText = 'interacted with your post';
   }
   
-  const userAvatar = notification.fromUser.profileImage 
-    ? (notification.fromUser.profileImage.startsWith('http') 
-        ? notification.fromUser.profileImage 
-        : `${API_URL}${notification.fromUser.profileImage}`)
-    : 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"%3E%3Ccircle cx="16" cy="16" r="16" fill="%23e1e8ed"/%3E%3Cpath d="M16 6c2.65 0 4.8 2.15 4.8 4.8s-2.15 4.8-4.8 4.8-4.8-2.15-4.8-4.8S13.35 6 16 6zM16 19.2c-5.3 0-9.6 2.7-9.6 6v2.4h19.2v-2.4c0-3.3-4.3-6-9.6-6z" fill="%23657786"/%3E%3C/svg%3E';
+  const userAvatar = getImageUrl(notification.fromUser.profileImage) || 
+    'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"%3E%3Ccircle cx="16" cy="16" r="16" fill="%23e1e8ed"/%3E%3Cpath d="M16 6c2.65 0 4.8 2.15 4.8 4.8s-2.15 4.8-4.8 4.8-4.8-2.15-4.8-4.8S13.35 6 16 6zM16 19.2c-5.3 0-9.6 2.7-9.6 6v2.4h19.2v-2.4c0-3.3-4.3-6-9.6-6z" fill="%23657786"/%3E%3C/svg%3E';
   
   notificationEl.innerHTML = `
     <div class="notification-icon ${iconColor}">
