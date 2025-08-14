@@ -2053,6 +2053,14 @@ function displayComments(comments) {
       const imageUrl = comment.image.startsWith('http') 
         ? comment.image 
         : `${API_URL}${comment.image}`;
+      
+      console.log('Comment image debug:', {
+        original: comment.image,
+        startsWithHttp: comment.image.startsWith('http'),
+        API_URL: API_URL,
+        finalUrl: imageUrl
+      });
+      
       imageHtml = `
         <div class="comment-image">
           <img src="${imageUrl}" alt="Comment image" />

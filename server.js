@@ -1124,11 +1124,32 @@ app.post('/api/comments', upload.single('image'), async (req, res) => {
     }
 
     // Yorum oluştur
+    let imagePath = '';
+    if (req.file) {
+      const fileName = `comment-${Date.now()}-${Math.round(Math.random() * 1E9)}.${req.file.originalname.split('.').pop()}`;
+      
+      // Memory store'a kaydet
+      fileMemoryStore.set(fileName, {
+        buffer: req.file.buffer,
+        mimetype: req.file.mimetype,
+        originalname: req.file.originalname
+      });
+      
+      imagePath = `/uploads/${fileName}`;
+      
+      console.log('Comment image saved to memory store:', {
+        fileName: fileName,
+        mimetype: req.file.mimetype,
+        size: req.file.buffer.length,
+        path: imagePath
+      });
+    }
+
     const newComment = new Comment({
       content: sanitizedContent,
       userId: userId,
       tweetId: tweetId,
-      image: req.file ? '/uploads/' + req.file.filename : ''
+      image: imagePath
     });
 
     await newComment.save();
