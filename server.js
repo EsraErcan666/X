@@ -67,6 +67,19 @@ db.once('open', () => {
   console.log('MongoDB bağlantısı başarılı!');
   console.log('NODE_ENV:', process.env.NODE_ENV);
   console.log('MONGODB_URI:', process.env.MONGODB_URI ? 'Set' : 'Not set');
+  
+  // Uploads klasörünü oluştur (eğer yoksa)
+  const uploadsDir = path.join(__dirname, 'uploads');
+  if (!fs.existsSync(uploadsDir)) {
+    try {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+      console.log('Uploads klasörü oluşturuldu');
+    } catch (error) {
+      console.error('Uploads klasörü oluşturulamadı:', error);
+    }
+  } else {
+    console.log('Uploads klasörü mevcut');
+  }
 });
 
 // Request logging middleware (sadece development'da)
