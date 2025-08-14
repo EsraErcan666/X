@@ -14,7 +14,12 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://x-tau-jet.vercel.app', 'https://*.vercel.app'] 
+    ? [
+        'https://x-tau-jet.vercel.app',
+        'https://x-git-master-esra-ercans-projects.vercel.app', 
+        'https://x-c20s86vs-esra-ercans-projects.vercel.app',
+        /\.vercel\.app$/
+      ]
     : ['http://localhost:3000', 'file://', 'null'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
