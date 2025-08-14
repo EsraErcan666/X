@@ -1,26 +1,34 @@
 // API adresini otomatik belirle
-const API_URL = window.location.hostname === 'localhost' 
+const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
   ? 'http://localhost:3000' 
   : window.location.origin;
+
+console.log('API_URL belirlendi:', API_URL);
 
 // Resim URL'sini doğru şekilde handle eden yardımcı fonksiyon
 function getImageUrl(imagePath) {
   if (!imagePath || imagePath.trim() === '') {
+    console.log('getImageUrl: Empty imagePath');
     return '';
   }
   
   // Eğer URL zaten tam bir URL ise (http/https ile başlıyorsa) direkt döndür
   if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    console.log('getImageUrl: Full URL detected:', imagePath);
     return imagePath;
   }
   
   // Eğer relative path ise API_URL ile birleştir
   if (imagePath.startsWith('/')) {
-    return `${API_URL}${imagePath}`;
+    const fullUrl = `${API_URL}${imagePath}`;
+    console.log('getImageUrl: Relative path converted:', fullUrl);
+    return fullUrl;
   }
   
   // Diğer durumlarda API_URL ile birleştir
-  return `${API_URL}/${imagePath}`;
+  const fullUrl = `${API_URL}/${imagePath}`;
+  console.log('getImageUrl: Path converted:', fullUrl);
+  return fullUrl;
 }
 
 // Sayfa yüklendiğinde login kontrolü

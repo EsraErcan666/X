@@ -78,6 +78,7 @@ const upload = multer({
 
 // Cloudinary'ye dosya yükleme fonksiyonu
 async function uploadToCloudinary(buffer, resourceType = 'auto', folder = 'xclone') {
+  console.log(`Cloudinary upload başlatılıyor: resourceType=${resourceType}, folder=${folder}`);
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
@@ -88,8 +89,10 @@ async function uploadToCloudinary(buffer, resourceType = 'auto', folder = 'xclon
       },
       (error, result) => {
         if (error) {
+          console.error('Cloudinary upload hatası:', error);
           reject(error);
         } else {
+          console.log('Cloudinary upload başarılı:', result.secure_url);
           resolve(result);
         }
       }
