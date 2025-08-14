@@ -514,8 +514,15 @@ function displayUserTweets(userTweets) {
     if (tweet.image && tweet.image.trim() !== '') {
       imageDiv.style.display = 'block';
       const imageImg = imageDiv.querySelector('img');
-      imageImg.src = tweet.image; // Data URL olarak geldiği için doğrudan kullan
+      
+      // URL'i düzgün oluştur
+      const imageUrl = tweet.image.startsWith('http') 
+        ? tweet.image 
+        : `${API_URL}${tweet.image}`;
+      
+      imageImg.src = imageUrl;
       imageImg.alt = 'Tweet image';
+      console.log('Tweet image URL:', imageUrl);
     } else {
       imageDiv.style.display = 'none';
     }
@@ -526,8 +533,15 @@ function displayUserTweets(userTweets) {
       videoDiv.style.display = 'block';
       const videoEl = videoDiv.querySelector('video');
       const videoSource = videoEl.querySelector('source');
-      videoSource.src = tweet.video; // Data URL olarak geldiği için doğrudan kullan
+      
+      // URL'i düzgün oluştur
+      const videoUrl = tweet.video.startsWith('http') 
+        ? tweet.video 
+        : `${API_URL}${tweet.video}`;
+      
+      videoSource.src = videoUrl;
       videoSource.type = getVideoMimeType(tweet.video);
+      console.log('Tweet video URL:', videoUrl);
       videoEl.load(); // Video'yu yeniden yükle
     } else {
       videoDiv.style.display = 'none';
@@ -1444,8 +1458,15 @@ function renderTweets() {
     if (tweet.image && tweet.image.trim() !== '') {
       imageDiv.style.display = 'block';
       const imageImg = imageDiv.querySelector('img');
-      imageImg.src = tweet.image; // Data URL olarak geldiği için doğrudan kullan
+      
+      // URL'i düzgün oluştur
+      const imageUrl = tweet.image.startsWith('http') 
+        ? tweet.image 
+        : `${API_URL}${tweet.image}`;
+      
+      imageImg.src = imageUrl;
       imageImg.alt = 'Tweet image';
+      console.log('renderTweets - Tweet image URL:', imageUrl);
     } else {
       imageDiv.style.display = 'none';
     }
@@ -1458,8 +1479,14 @@ function renderTweets() {
       videoDiv.style.display = 'block';
       const videoEl = videoDiv.querySelector('video');
       const videoSource = videoEl.querySelector('source');
-      videoSource.src = tweet.video; // Data URL olarak geldiği için doğrudan kullan
-      console.log('renderTweets - Video URL:', tweet.video);
+      
+      // URL'i düzgün oluştur
+      const videoUrl = tweet.video.startsWith('http') 
+        ? tweet.video 
+        : `${API_URL}${tweet.video}`;
+      
+      videoSource.src = videoUrl;
+      console.log('renderTweets - Video URL:', videoUrl);
       videoSource.type = getVideoMimeType(tweet.video);
       console.log('renderTweets - Video MIME type:', getVideoMimeType(tweet.video));
       videoEl.load(); // Video'yu yeniden yükle
