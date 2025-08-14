@@ -28,26 +28,8 @@ app.use(cors({
 app.use(express.json());
 app.use(express.static('.'));
 
-// Uploads klasörünü oluştur
-const uploadsDir = path.join(__dirname, 'uploads');
-const imagesDir = path.join(__dirname, 'images');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
-if (!fs.existsSync(imagesDir)) {
-  fs.mkdirSync(imagesDir, { recursive: true });
-}
-
-// Multer konfigürasyonu
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/');
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
+// Vercel için memory storage kullan
+const storage = multer.memoryStorage();
 
 const upload = multer({ 
   storage: storage,
@@ -70,8 +52,39 @@ const upload = multer({
   }
 });
 
-// Uploads klasörünü statik olarak servis et
-app.use('/uploads', express.static('uploads'));
+// Static files servis etme
+app.use('/images', express.static(path.join(__dirname, 'images')));
+
+// Base64 medya servis etme endpoint'i
+app.get('/api/media/:tweetId/:type', async (req, res) => {
+  try {
+    const { tweetId, type } = req.params;
+    const tweet = await Tweet.findById(tweetId);
+    
+    if (!tweet) {
+      return res.status(404).json({ error: 'Tweet bulunamadı' });
+    }
+
+    let data, mimeType;
+    
+    if (type === 'image' && tweet.image) {
+      data = tweet.image;
+      mimeType = tweet.imageMimeType;
+    } else if (type === 'video' && tweet.video) {
+      data = tweet.video;
+      mimeType = tweet.videoMimeType;
+    } else {
+      return res.status(404).json({ error: 'Medya bulunamadı' });
+    }
+
+    const buffer = Buffer.from(data, 'base64');
+    res.set('Content-Type', mimeType);
+    res.send(buffer);
+  } catch (error) {
+    console.error('Medya servis etme hatası:', error);
+    res.status(500).json({ error: 'Medya yüklenirken hata oluştu' });
+  }
+});
 
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/xclone', {
   useNewUrlParser: true,
@@ -613,11 +626,29 @@ app.post('/api/tweets', upload.fields([
       });
     }
 
+    // Dosyaları base64 olarak sakla
+    let imageData = '';
+    let videoData = '';
+    let imageMimeType = '';
+    let videoMimeType = '';
+
+    if (req.files && req.files.image) {
+      imageData = req.files.image[0].buffer.toString('base64');
+      imageMimeType = req.files.image[0].mimetype;
+    }
+
+    if (req.files && req.files.video) {
+      videoData = req.files.video[0].buffer.toString('base64');
+      videoMimeType = req.files.video[0].mimetype;
+    }
+
     const newTweet = new Tweet({
       content: sanitizedContent,
       userId: userId,
-      image: req.files && req.files.image ? '/uploads/' + req.files.image[0].filename : '',
-      video: req.files && req.files.video ? '/uploads/' + req.files.video[0].filename : '',
+      image: imageData,
+      video: videoData,
+      imageMimeType: imageMimeType,
+      videoMimeType: videoMimeType,
       views: 1 // İlk görüntüleme
     });
 

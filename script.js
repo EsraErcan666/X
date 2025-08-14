@@ -442,7 +442,7 @@ function displayUserTweets(userTweets) {
       const imageImg = imageDiv.querySelector('img');
       const imageUrl = tweet.image.startsWith('http') 
         ? tweet.image 
-        : `${API_URL}${tweet.image}`;
+        : `${API_URL}/api/media/${tweet._id}/image`;
       imageImg.src = imageUrl;
       imageImg.alt = 'Tweet image';
     } else {
@@ -457,7 +457,7 @@ function displayUserTweets(userTweets) {
       const videoSource = videoEl.querySelector('source');
       const videoUrl = tweet.video.startsWith('http') 
         ? tweet.video 
-        : `${API_URL}${tweet.video}`;
+        : `${API_URL}/api/media/${tweet._id}/video`;
       videoSource.src = videoUrl;
       videoSource.type = getVideoMimeType(tweet.video);
       videoEl.load(); // Video'yu yeniden yükle
@@ -1311,7 +1311,7 @@ function renderTweets() {
       const imageImg = imageDiv.querySelector('img');
       const imageUrl = tweet.image.startsWith('http') 
         ? tweet.image 
-        : `${API_URL}${tweet.image}`;
+        : `${API_URL}/api/media/${tweet._id}/image`;
       imageImg.src = imageUrl;
       imageImg.alt = 'Tweet image';
     } else {
@@ -1328,7 +1328,7 @@ function renderTweets() {
       const videoSource = videoEl.querySelector('source');
       const videoUrl = tweet.video.startsWith('http') 
         ? tweet.video 
-        : `${API_URL}${tweet.video}`;
+        : `${API_URL}/api/media/${tweet._id}/video`;
       console.log('renderTweets - Video URL:', videoUrl);
       videoSource.src = videoUrl;
       videoSource.type = getVideoMimeType(tweet.video);
@@ -1704,7 +1704,7 @@ function openCommentModal(tweetId) {
     originalImage.style.display = 'block';
     const imageUrl = tweet.image.startsWith('http') 
       ? tweet.image 
-      : `${API_URL}${tweet.image}`;
+      : `${API_URL}/api/media/${tweet._id}/image`;
     originalImage.querySelector('img').src = imageUrl;
   } else {
     originalImage.style.display = 'none';
@@ -2188,7 +2188,7 @@ function createTweetElement(tweet) {
     const imageImg = imageDiv.querySelector('img');
     const imageUrl = tweet.image.startsWith('http') 
       ? tweet.image 
-      : `${API_URL}${tweet.image}`;
+      : `${API_URL}/api/media/${tweet._id}/image`;
     imageImg.src = imageUrl;
     imageImg.alt = 'Tweet image';
   } else {
@@ -2203,7 +2203,7 @@ function createTweetElement(tweet) {
     const videoSource = videoEl.querySelector('source');
     const videoUrl = tweet.video.startsWith('http') 
       ? tweet.video 
-      : `${API_URL}${tweet.video}`;
+      : `${API_URL}/api/media/${tweet._id}/video`;
     videoSource.src = videoUrl;
     videoSource.type = getVideoMimeType(tweet.video);
     videoEl.load(); // Video'yu yeniden yükle
