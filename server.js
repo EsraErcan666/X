@@ -450,14 +450,24 @@ app.put('/api/user/:userId', upload.fields([
     const { userId } = req.params;
     const { displayName, bio, location, website } = req.body;
 
+    console.log('=== PROFILE UPDATE DEBUG ===');
+    console.log('User ID:', userId);
+    console.log('Request body:', req.body);
+    console.log('Request files:', req.files);
+    console.log('Files keys:', req.files ? Object.keys(req.files) : 'No files');
+
     // Kullanıcıyı bul
     const user = await User.findById(userId);
     if (!user) {
+      console.log('Kullanıcı bulunamadı:', userId);
       return res.status(404).json({
         success: false,
         message: 'Kullanıcı bulunamadı'
       });
     }
+
+    console.log('Mevcut kullanıcı profil resmi:', user.profileImage);
+    console.log('Mevcut kullanıcı banner resmi:', user.bannerImage);
 
     // Girişleri güvenli hale getir
     const sanitizedDisplayName = sanitizeInput(displayName);
@@ -488,6 +498,8 @@ app.put('/api/user/:userId', upload.fields([
 
     // Profil resmi yüklendiyse
     if (req.files && req.files.profileImage) {
+      console.log('Profil resmi yükleniyor...');
+      
       // Eski profil resmini sil (eğer varsa)
       if (user.profileImage && user.profileImage.startsWith('/uploads/')) {
         const oldImagePath = path.join(__dirname, user.profileImage);
@@ -498,21 +510,30 @@ app.put('/api/user/:userId', upload.fields([
       const profileImageFileName = `profileImage-${Date.now()}-${Math.round(Math.random() * 1E9)}.${profileImageFile.originalname.split('.').pop()}`;
       const profileImagePath = path.join('uploads', profileImageFileName);
       
+      console.log('Profil resmi dosya adı:', profileImageFileName);
+      console.log('Profil resmi yolu:', profileImagePath);
+      
       try {
         const uploadsDir = path.join(__dirname, 'uploads');
         if (!fs.existsSync(uploadsDir)) {
           fs.mkdirSync(uploadsDir, { recursive: true });
+          console.log('Uploads klasörü oluşturuldu');
         }
         fs.writeFileSync(path.join(__dirname, profileImagePath), profileImageFile.buffer);
         updateData.profileImage = '/' + profileImagePath;
+        console.log('Profil resmi başarıyla kaydedildi:', updateData.profileImage);
       } catch (error) {
         console.error('Profil resmi kaydetme hatası:', error);
         // Dosya kaydedilemezse mevcut profil resmini koru
       }
+    } else {
+      console.log('Profil resmi yüklenmedi');
     }
 
     // Banner resmi yüklendiyse
     if (req.files && req.files.bannerImage) {
+      console.log('Banner resmi yükleniyor...');
+      
       // Eski banner resmini sil (eğer varsa)
       if (user.bannerImage && user.bannerImage.startsWith('/uploads/')) {
         const oldBannerPath = path.join(__dirname, user.bannerImage);
@@ -523,25 +544,38 @@ app.put('/api/user/:userId', upload.fields([
       const bannerImageFileName = `bannerImage-${Date.now()}-${Math.round(Math.random() * 1E9)}.${bannerImageFile.originalname.split('.').pop()}`;
       const bannerImagePath = path.join('uploads', bannerImageFileName);
       
+      console.log('Banner resmi dosya adı:', bannerImageFileName);
+      console.log('Banner resmi yolu:', bannerImagePath);
+      
       try {
         const uploadsDir = path.join(__dirname, 'uploads');
         if (!fs.existsSync(uploadsDir)) {
           fs.mkdirSync(uploadsDir, { recursive: true });
+          console.log('Uploads klasörü oluşturuldu');
         }
         fs.writeFileSync(path.join(__dirname, bannerImagePath), bannerImageFile.buffer);
         updateData.bannerImage = '/' + bannerImagePath;
+        console.log('Banner resmi başarıyla kaydedildi:', updateData.bannerImage);
       } catch (error) {
         console.error('Banner resmi kaydetme hatası:', error);
         // Dosya kaydedilemezse mevcut banner resmini koru
       }
+    } else {
+      console.log('Banner resmi yüklenmedi');
     }
 
     // Kullanıcıyı güncelle
+    console.log('Database update data:', updateData);
+    
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       updateData,
       { new: true, runValidators: true }
     );
+
+    console.log('Database update başarılı');
+    console.log('Güncellenmiş kullanıcı profil resmi:', updatedUser.profileImage);
+    console.log('Güncellenmiş kullanıcı banner resmi:', updatedUser.bannerImage);
 
     res.json({
       success: true,

@@ -829,17 +829,38 @@ async function saveProfile() {
   formData.append('website', website);
   
   const avatarFile = document.getElementById('avatarUpload').files[0];
+  const bannerFile = document.getElementById('bannerUpload').files[0];
+  
+  console.log('=== PROFILE SAVE DEBUG ===');
+  console.log('Avatar file:', avatarFile);
+  console.log('Banner file:', bannerFile);
+  
   if (avatarFile) {
+    console.log('Avatar file details:', {
+      name: avatarFile.name,
+      size: avatarFile.size,
+      type: avatarFile.type
+    });
     formData.append('profileImage', avatarFile);
   }
   
-  const bannerFile = document.getElementById('bannerUpload').files[0];
   if (bannerFile) {
+    console.log('Banner file details:', {
+      name: bannerFile.name,
+      size: bannerFile.size,
+      type: bannerFile.type
+    });
     formData.append('bannerImage', bannerFile);
   }
   
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const userId = user._id || localStorage.getItem('currentUserId') || '507f1f77bcf86cd799439011';
+  
+  console.log('User ID:', userId);
+  console.log('FormData entries:');
+  for (let [key, value] of formData.entries()) {
+    console.log(key, value);
+  }
   
   try {
     const response = await fetch(`${API_URL}/api/user/${userId}`, { 
