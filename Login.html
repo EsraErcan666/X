@@ -232,6 +232,9 @@
   </div>
 
   <script>
+    // API adresini otomatik belirle
+       const API_URL = window.location.hostname === 'localhost' 
+       ? 'http://localhost:3000' : window.location.origin;
     document.addEventListener('DOMContentLoaded', function() {
       const signupModal = document.getElementById('signup-modal');
       const loginModal = document.getElementById('loginModal');
@@ -722,9 +725,3 @@
   </script>
 </body>
 </html>
-<script>
-// API adresini otomatik belirle
-const API_URL = window.location.hostname === 'localhost' 
-? 'http://localhost:3000' 
-: window.location.origin;
-</script>
