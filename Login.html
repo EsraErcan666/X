@@ -722,3 +722,9 @@
   </script>
 </body>
 </html>
+<script>
+// API adresini otomatik belirle
+const API_URL = window.location.hostname === 'localhost' 
+? 'http://localhost:3000' 
+: window.location.origin;
+</script>
