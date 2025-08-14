@@ -55,37 +55,6 @@ const upload = multer({
 // Static files servis etme
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
-// Base64 medya servis etme endpoint'i
-app.get('/api/media/:tweetId/:type', async (req, res) => {
-  try {
-    const { tweetId, type } = req.params;
-    const tweet = await Tweet.findById(tweetId);
-    
-    if (!tweet) {
-      return res.status(404).json({ error: 'Tweet bulunamadı' });
-    }
-
-    let data, mimeType;
-    
-    if (type === 'image' && tweet.image) {
-      data = tweet.image;
-      mimeType = tweet.imageMimeType;
-    } else if (type === 'video' && tweet.video) {
-      data = tweet.video;
-      mimeType = tweet.videoMimeType;
-    } else {
-      return res.status(404).json({ error: 'Medya bulunamadı' });
-    }
-
-    const buffer = Buffer.from(data, 'base64');
-    res.set('Content-Type', mimeType);
-    res.send(buffer);
-  } catch (error) {
-    console.error('Medya servis etme hatası:', error);
-    res.status(500).json({ error: 'Medya yüklenirken hata oluştu' });
-  }
-});
-
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/xclone', {
   useNewUrlParser: true,
   useUnifiedTopology: true
@@ -702,23 +671,37 @@ app.get('/api/tweets', async (req, res) => {
       .skip(skip)
       .limit(limit);
 
-    const formattedTweets = tweets.map(tweet => ({
-      _id: tweet._id,
-      content: tweet.content,
-      image: tweet.image,
-      video: tweet.video,
-      likes: tweet.likes,
-      retweets: tweet.retweets,
-      comments: tweet.comments,
-      views: tweet.views,
-      created_at: tweet.created_at,
-      user: {
-        _id: tweet.userId._id,
-        username: tweet.userId.username,
-        displayName: tweet.userId.displayName,
-        profileImage: tweet.userId.profileImage
+    const formattedTweets = tweets.map(tweet => {
+      // Medya verilerini data URL formatına çevir
+      let imageUrl = '';
+      let videoUrl = '';
+      
+      if (tweet.image && tweet.imageMimeType) {
+        imageUrl = `data:${tweet.imageMimeType};base64,${tweet.image}`;
       }
-    }));
+      
+      if (tweet.video && tweet.videoMimeType) {
+        videoUrl = `data:${tweet.videoMimeType};base64,${tweet.video}`;
+      }
+      
+      return {
+        _id: tweet._id,
+        content: tweet.content,
+        image: imageUrl,
+        video: videoUrl,
+        likes: tweet.likes,
+        retweets: tweet.retweets,
+        comments: tweet.comments,
+        views: tweet.views,
+        created_at: tweet.created_at,
+        user: {
+          _id: tweet.userId._id,
+          username: tweet.userId.username,
+          displayName: tweet.userId.displayName,
+          profileImage: tweet.userId.profileImage
+        }
+      };
+    });
 
     res.json({
       success: true,
@@ -753,23 +736,37 @@ app.get('/api/tweets/user/:userId', async (req, res) => {
       .skip(skip)
       .limit(limit);
 
-    const formattedTweets = tweets.map(tweet => ({
-      _id: tweet._id,
-      content: tweet.content,
-      image: tweet.image,
-      video: tweet.video,
-      likes: tweet.likes,
-      retweets: tweet.retweets,
-      comments: tweet.comments,
-      views: tweet.views,
-      created_at: tweet.created_at,
-      user: {
-        _id: tweet.userId._id,
-        username: tweet.userId.username,
-        displayName: tweet.userId.displayName,
-        profileImage: tweet.userId.profileImage
+    const formattedTweets = tweets.map(tweet => {
+      // Medya verilerini data URL formatına çevir
+      let imageUrl = '';
+      let videoUrl = '';
+      
+      if (tweet.image && tweet.imageMimeType) {
+        imageUrl = `data:${tweet.imageMimeType};base64,${tweet.image}`;
       }
-    }));
+      
+      if (tweet.video && tweet.videoMimeType) {
+        videoUrl = `data:${tweet.videoMimeType};base64,${tweet.video}`;
+      }
+      
+      return {
+        _id: tweet._id,
+        content: tweet.content,
+        image: imageUrl,
+        video: videoUrl,
+        likes: tweet.likes,
+        retweets: tweet.retweets,
+        comments: tweet.comments,
+        views: tweet.views,
+        created_at: tweet.created_at,
+        user: {
+          _id: tweet.userId._id,
+          username: tweet.userId.username,
+          displayName: tweet.userId.displayName,
+          profileImage: tweet.userId.profileImage
+        }
+      };
+    });
 
     res.json({
       success: true,

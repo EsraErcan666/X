@@ -440,10 +440,7 @@ function displayUserTweets(userTweets) {
     if (tweet.image && tweet.image.trim() !== '') {
       imageDiv.style.display = 'block';
       const imageImg = imageDiv.querySelector('img');
-      const imageUrl = tweet.image.startsWith('http') 
-        ? tweet.image 
-        : `${API_URL}/api/media/${tweet._id}/image`;
-      imageImg.src = imageUrl;
+      imageImg.src = tweet.image; // Data URL olarak geldiği için doğrudan kullan
       imageImg.alt = 'Tweet image';
     } else {
       imageDiv.style.display = 'none';
@@ -455,10 +452,7 @@ function displayUserTweets(userTweets) {
       videoDiv.style.display = 'block';
       const videoEl = videoDiv.querySelector('video');
       const videoSource = videoEl.querySelector('source');
-      const videoUrl = tweet.video.startsWith('http') 
-        ? tweet.video 
-        : `${API_URL}/api/media/${tweet._id}/video`;
-      videoSource.src = videoUrl;
+      videoSource.src = tweet.video; // Data URL olarak geldiği için doğrudan kullan
       videoSource.type = getVideoMimeType(tweet.video);
       videoEl.load(); // Video'yu yeniden yükle
     } else {
@@ -1309,10 +1303,7 @@ function renderTweets() {
     if (tweet.image && tweet.image.trim() !== '') {
       imageDiv.style.display = 'block';
       const imageImg = imageDiv.querySelector('img');
-      const imageUrl = tweet.image.startsWith('http') 
-        ? tweet.image 
-        : `${API_URL}/api/media/${tweet._id}/image`;
-      imageImg.src = imageUrl;
+      imageImg.src = tweet.image; // Data URL olarak geldiği için doğrudan kullan
       imageImg.alt = 'Tweet image';
     } else {
       imageDiv.style.display = 'none';
@@ -1326,11 +1317,8 @@ function renderTweets() {
       videoDiv.style.display = 'block';
       const videoEl = videoDiv.querySelector('video');
       const videoSource = videoEl.querySelector('source');
-      const videoUrl = tweet.video.startsWith('http') 
-        ? tweet.video 
-        : `${API_URL}/api/media/${tweet._id}/video`;
-      console.log('renderTweets - Video URL:', videoUrl);
-      videoSource.src = videoUrl;
+      videoSource.src = tweet.video; // Data URL olarak geldiği için doğrudan kullan
+      console.log('renderTweets - Video URL:', tweet.video);
       videoSource.type = getVideoMimeType(tweet.video);
       console.log('renderTweets - Video MIME type:', getVideoMimeType(tweet.video));
       videoEl.load(); // Video'yu yeniden yükle
@@ -1702,10 +1690,7 @@ function openCommentModal(tweetId) {
   // Tweet resmi varsa göster
   if (tweet.image && tweet.image.trim() !== '') {
     originalImage.style.display = 'block';
-    const imageUrl = tweet.image.startsWith('http') 
-      ? tweet.image 
-      : `${API_URL}/api/media/${tweet._id}/image`;
-    originalImage.querySelector('img').src = imageUrl;
+    originalImage.querySelector('img').src = tweet.image; // Data URL olarak geldiği için doğrudan kullan
   } else {
     originalImage.style.display = 'none';
   }
@@ -2186,10 +2171,7 @@ function createTweetElement(tweet) {
   if (tweet.image && tweet.image.trim() !== '') {
     imageDiv.style.display = 'block';
     const imageImg = imageDiv.querySelector('img');
-    const imageUrl = tweet.image.startsWith('http') 
-      ? tweet.image 
-      : `${API_URL}/api/media/${tweet._id}/image`;
-    imageImg.src = imageUrl;
+    imageImg.src = tweet.image; // Data URL olarak geldiği için doğrudan kullan
     imageImg.alt = 'Tweet image';
   } else {
     imageDiv.style.display = 'none';
@@ -2201,10 +2183,7 @@ function createTweetElement(tweet) {
     videoDiv.style.display = 'block';
     const videoEl = videoDiv.querySelector('video');
     const videoSource = videoEl.querySelector('source');
-    const videoUrl = tweet.video.startsWith('http') 
-      ? tweet.video 
-      : `${API_URL}/api/media/${tweet._id}/video`;
-    videoSource.src = videoUrl;
+    videoSource.src = tweet.video; // Data URL olarak geldiği için doğrudan kullan
     videoSource.type = getVideoMimeType(tweet.video);
     videoEl.load(); // Video'yu yeniden yükle
   } else {
