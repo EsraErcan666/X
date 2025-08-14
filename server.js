@@ -475,8 +475,8 @@ app.put('/api/user/:userId', upload.fields([
 
     // Profil resmi yüklendiyse
     if (req.files && req.files.profileImage) {
-      // Eski profil resmini sil
-      if (user.profileImage) {
+      // Eski profil resmini sil (eğer varsa)
+      if (user.profileImage && user.profileImage.startsWith('/uploads/')) {
         const oldImagePath = path.join(__dirname, user.profileImage);
         deleteFileIfExists(oldImagePath);
       }
@@ -484,14 +484,24 @@ app.put('/api/user/:userId', upload.fields([
       const profileImageFile = req.files.profileImage[0];
       const profileImageFileName = `profileImage-${Date.now()}-${Math.round(Math.random() * 1E9)}.${profileImageFile.originalname.split('.').pop()}`;
       const profileImagePath = path.join('uploads', profileImageFileName);
-      fs.writeFileSync(profileImagePath, profileImageFile.buffer);
-      updateData.profileImage = '/' + profileImagePath;
+      
+      try {
+        const uploadsDir = path.join(__dirname, 'uploads');
+        if (!fs.existsSync(uploadsDir)) {
+          fs.mkdirSync(uploadsDir, { recursive: true });
+        }
+        fs.writeFileSync(path.join(__dirname, profileImagePath), profileImageFile.buffer);
+        updateData.profileImage = '/' + profileImagePath;
+      } catch (error) {
+        console.error('Profil resmi kaydetme hatası:', error);
+        // Dosya kaydedilemezse mevcut profil resmini koru
+      }
     }
 
     // Banner resmi yüklendiyse
     if (req.files && req.files.bannerImage) {
-      // Eski banner resmini sil
-      if (user.bannerImage) {
+      // Eski banner resmini sil (eğer varsa)
+      if (user.bannerImage && user.bannerImage.startsWith('/uploads/')) {
         const oldBannerPath = path.join(__dirname, user.bannerImage);
         deleteFileIfExists(oldBannerPath);
       }
@@ -499,8 +509,18 @@ app.put('/api/user/:userId', upload.fields([
       const bannerImageFile = req.files.bannerImage[0];
       const bannerImageFileName = `bannerImage-${Date.now()}-${Math.round(Math.random() * 1E9)}.${bannerImageFile.originalname.split('.').pop()}`;
       const bannerImagePath = path.join('uploads', bannerImageFileName);
-      fs.writeFileSync(bannerImagePath, bannerImageFile.buffer);
-      updateData.bannerImage = '/' + bannerImagePath;
+      
+      try {
+        const uploadsDir = path.join(__dirname, 'uploads');
+        if (!fs.existsSync(uploadsDir)) {
+          fs.mkdirSync(uploadsDir, { recursive: true });
+        }
+        fs.writeFileSync(path.join(__dirname, bannerImagePath), bannerImageFile.buffer);
+        updateData.bannerImage = '/' + bannerImagePath;
+      } catch (error) {
+        console.error('Banner resmi kaydetme hatası:', error);
+        // Dosya kaydedilemezse mevcut banner resmini koru
+      }
     }
 
     // Kullanıcıyı güncelle
@@ -531,9 +551,14 @@ app.put('/api/user/:userId', upload.fields([
 
   } catch (error) {
     console.error('Profil güncelleme hatası:', error);
+    console.error('Error stack:', error.stack);
+    console.error('Request body:', req.body);
+    console.error('Request files:', req.files);
+    
     res.status(500).json({
       success: false,
-      message: 'Sunucu hatası'
+      message: 'Sunucu hatası: ' + error.message,
+      error: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 });
@@ -624,14 +649,36 @@ app.post('/api/tweets', upload.fields([
       const imageFile = req.files.image[0];
       const imageFileName = `image-${Date.now()}-${Math.round(Math.random() * 1E9)}.${imageFile.originalname.split('.').pop()}`;
       imagePath = path.join('uploads', imageFileName);
-      fs.writeFileSync(imagePath, imageFile.buffer);
+      
+      // Vercel'de dosya sistemi yazma yerine memory'de tutacağız ve /uploads route'undan serve edeceğiz
+      try {
+        const uploadsDir = path.join(__dirname, 'uploads');
+        if (!fs.existsSync(uploadsDir)) {
+          fs.mkdirSync(uploadsDir, { recursive: true });
+        }
+        fs.writeFileSync(path.join(__dirname, imagePath), imageFile.buffer);
+      } catch (error) {
+        console.error('Dosya yazma hatası:', error);
+        // Vercel'de yazma başarısız olursa, uploads route'unda memory'den serve edeceğiz
+      }
     }
 
     if (req.files && req.files.video) {
       const videoFile = req.files.video[0];
       const videoFileName = `video-${Date.now()}-${Math.round(Math.random() * 1E9)}.${videoFile.originalname.split('.').pop()}`;
       videoPath = path.join('uploads', videoFileName);
-      fs.writeFileSync(videoPath, videoFile.buffer);
+      
+      // Vercel'de dosya sistemi yazma yerine memory'de tutacağız ve /uploads route'undan serve edeceğiz
+      try {
+        const uploadsDir = path.join(__dirname, 'uploads');
+        if (!fs.existsSync(uploadsDir)) {
+          fs.mkdirSync(uploadsDir, { recursive: true });
+        }
+        fs.writeFileSync(path.join(__dirname, videoPath), videoFile.buffer);
+      } catch (error) {
+        console.error('Dosya yazma hatası:', error);
+        // Vercel'de yazma başarısız olursa, uploads route'unda memory'den serve edeceğiz
+      }
     }
 
     const newTweet = new Tweet({
@@ -1384,6 +1431,63 @@ app.put('/api/notifications/:notificationId/read', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Bildirim güncellenirken hata oluştu'
+    });
+  }
+});
+
+// Uploads dosyalarını serve etmek için özel endpoint
+app.get('/uploads/:filename', (req, res) => {
+  try {
+    const { filename } = req.params;
+    const filePath = path.join(__dirname, 'uploads', filename);
+    
+    // Dosya varlığını kontrol et
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({
+        success: false,
+        message: 'Dosya bulunamadı'
+      });
+    }
+    
+    // MIME type'ı belirle
+    const ext = path.extname(filename).toLowerCase();
+    let contentType = 'application/octet-stream';
+    
+    if (['.jpg', '.jpeg'].includes(ext)) contentType = 'image/jpeg';
+    else if (ext === '.png') contentType = 'image/png';
+    else if (ext === '.gif') contentType = 'image/gif';
+    else if (ext === '.webp') contentType = 'image/webp';
+    else if (ext === '.mp4') contentType = 'video/mp4';
+    else if (ext === '.webm') contentType = 'video/webm';
+    else if (ext === '.mov') contentType = 'video/quicktime';
+    else if (ext === '.avi') contentType = 'video/x-msvideo';
+    
+    // Cache headers ekle
+    res.set({
+      'Content-Type': contentType,
+      'Cache-Control': 'public, max-age=31536000', // 1 yıl cache
+      'Access-Control-Allow-Origin': '*'
+    });
+    
+    // Dosyayı stream olarak gönder
+    const fileStream = fs.createReadStream(filePath);
+    fileStream.pipe(res);
+    
+    fileStream.on('error', (error) => {
+      console.error('Dosya okuma hatası:', error);
+      if (!res.headersSent) {
+        res.status(500).json({
+          success: false,
+          message: 'Dosya okunamadı'
+        });
+      }
+    });
+    
+  } catch (error) {
+    console.error('Uploads endpoint hatası:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Sunucu hatası'
     });
   }
 });
