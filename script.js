@@ -1,51 +1,13 @@
-// API adresini otomatik belirle - güvenli versiyon
-function getApiUrl() {
-  const hostname = window.location.hostname;
-  const origin = window.location.origin;
-  
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return 'http://localhost:3000';
-  } else {
-    return origin;
-  }
-}
-
-const API_URL = getApiUrl();
+// API adresini otomatik belirle
+const API_URL = window.location.hostname === 'localhost' 
+  ? 'http://localhost:3000' 
+  : window.location.origin;
 
 console.log('API_URL Debug:', {
   hostname: window.location.hostname,
   origin: window.location.origin,
   API_URL: API_URL
 });
-
-// Güvenli URL oluşturma fonksiyonu
-function createImageUrl(imagePath) {
-  if (!imagePath || imagePath.trim() === '') {
-    return 'images/logo.png';
-  }
-  
-  // Eğer zaten tam URL ise, olduğu gibi döndür
-  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-    return imagePath;
-  }
-  
-  // Güvenli API_URL al
-  const apiUrl = getApiUrl();
-  
-  // Eğer / ile başlamıyorsa ekle
-  const cleanPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
-  
-  const finalUrl = `${apiUrl}${cleanPath}`;
-  
-  console.log('Image URL created:', {
-    originalPath: imagePath,
-    apiUrl: apiUrl,
-    cleanPath: cleanPath,
-    finalUrl: finalUrl
-  });
-  
-  return finalUrl;
-}
 
 // Test için geçici kullanıcı oluştur
 if (!localStorage.getItem('user')) {
@@ -283,7 +245,15 @@ function createFollowItem(user) {
   const displayName = user.displayName || user.username;
   
   // Profil resmi URL'sini doğru şekilde oluştur
-  const profileImageSrc = createImageUrl(user.profileImage);
+  let profileImageSrc = '';
+  if (user.profileImage && user.profileImage.trim() !== '') {
+    profileImageSrc = user.profileImage.startsWith('http') 
+      ? user.profileImage 
+      : `${API_URL}${user.profileImage}`;
+  } else {
+    // Varsayılan avatar göster
+    profileImageSrc = 'images/logo.png';
+  }
   
   followItem.innerHTML = `
     <img src="${profileImageSrc}" alt="${displayName}" class="avatar" />
@@ -531,7 +501,17 @@ function displayUserTweets(userTweets) {
     // Avatar
     const avatar = tweetEl.querySelector('.avatar');
     if (tweet.user.profileImage && tweet.user.profileImage.trim() !== '') {
-      const avatarUrl = createImageUrl(tweet.user.profileImage);
+      const avatarUrl = tweet.user.profileImage.startsWith('http') 
+        ? tweet.user.profileImage 
+        : `${API_URL}${tweet.user.profileImage}`;
+      
+      console.log('Avatar URL Debug:', {
+        originalProfileImage: tweet.user.profileImage,
+        startsWithHttp: tweet.user.profileImage.startsWith('http'),
+        API_URL: API_URL,
+        finalAvatarUrl: avatarUrl
+      });
+      
       avatar.src = avatarUrl;
     } else {
       avatar.src = 'images/logo.png';
@@ -557,7 +537,18 @@ function displayUserTweets(userTweets) {
       imageDiv.style.display = 'block';
       const imageImg = imageDiv.querySelector('img');
       
-      const imageUrl = createImageUrl(tweet.image);
+      // URL'i düzgün oluştur
+      const imageUrl = tweet.image.startsWith('http') 
+        ? tweet.image 
+        : `${API_URL}${tweet.image}`;
+      
+      console.log('Tweet Image URL Debug:', {
+        originalImage: tweet.image,
+        startsWithHttp: tweet.image.startsWith('http'),
+        API_URL: API_URL,
+        finalImageUrl: imageUrl
+      });
+      
       imageImg.src = imageUrl;
       imageImg.alt = 'Tweet image';
     } else {
@@ -571,9 +562,14 @@ function displayUserTweets(userTweets) {
       const videoEl = videoDiv.querySelector('video');
       const videoSource = videoEl.querySelector('source');
       
-      const videoUrl = createImageUrl(tweet.video);
+      // URL'i düzgün oluştur
+      const videoUrl = tweet.video.startsWith('http') 
+        ? tweet.video 
+        : `${API_URL}${tweet.video}`;
+      
       videoSource.src = videoUrl;
       videoSource.type = getVideoMimeType(tweet.video);
+      console.log('Tweet video URL:', videoUrl);
       videoEl.load(); // Video'yu yeniden yükle
     } else {
       videoDiv.style.display = 'none';
@@ -671,13 +667,15 @@ function populateEditForm(user) {
   if (avatarPreview && user.profileImage) {
     const fullImageUrl = user.profileImage.startsWith('http') 
       ? user.profileImage 
-      : `createImageUrl(user.profileImage)`;
+      : `${API_URL}${user.profileImage}`;
     console.log('Avatar önizleme güncelleniyor:', fullImageUrl);
     avatarPreview.src = fullImageUrl;
   }
   
   if (currentBanner && user.bannerImage) {
-    const fullBannerUrl = createImageUrl(user.bannerImage);
+    const fullBannerUrl = user.bannerImage.startsWith('http') 
+      ? user.bannerImage 
+      : `${API_URL}${user.bannerImage}`;
     console.log('Banner önizleme güncelleniyor:', fullBannerUrl);
     currentBanner.style.backgroundImage = `url(${fullBannerUrl})`;
     currentBanner.style.backgroundSize = 'cover';
@@ -986,7 +984,7 @@ function updateProfileDisplay(user) {
   if (user.profileImage && user.profileImage.trim() !== '') {
     const fullImageUrl = user.profileImage.startsWith('http') 
       ? user.profileImage 
-      : `createImageUrl(user.profileImage)`;
+      : `${API_URL}${user.profileImage}`;
       
     if (profileAvatar) {
       profileAvatar.src = fullImageUrl;
@@ -1011,7 +1009,7 @@ function updateProfileDisplay(user) {
     if (user.bannerImage && user.bannerImage.trim() !== '') {
       const fullBannerUrl = user.bannerImage.startsWith('http') 
         ? user.bannerImage 
-        : `createImageUrl(user.bannerImage)`;
+        : `${API_URL}${user.bannerImage}`;
       bannerImage.style.backgroundImage = `url(${fullBannerUrl})`;
       bannerImage.style.backgroundSize = 'cover';
       bannerImage.style.backgroundPosition = 'center';
@@ -1310,7 +1308,7 @@ function updateModalUserAvatar() {
   if (user && user.profileImage && user.profileImage.trim() !== '') {
     const avatarUrl = user.profileImage.startsWith('http') 
       ? user.profileImage 
-      : `createImageUrl(user.profileImage)`;
+      : `${API_URL}${user.profileImage}`;
     modalAvatar.src = avatarUrl;
   } else {
     // Varsayılan avatar
@@ -1492,7 +1490,7 @@ function renderTweets() {
       // URL'i düzgün oluştur
       const imageUrl = tweet.image.startsWith('http') 
         ? tweet.image 
-        : `createImageUrl(tweet.image)`;
+        : `${API_URL}${tweet.image}`;
       
       imageImg.src = imageUrl;
       imageImg.alt = 'Tweet image';
@@ -1513,7 +1511,7 @@ function renderTweets() {
       // URL'i düzgün oluştur
       const videoUrl = tweet.video.startsWith('http') 
         ? tweet.video 
-        : `createImageUrl(tweet.video)`;
+        : `${API_URL}${tweet.video}`;
       
       videoSource.src = videoUrl;
       console.log('renderTweets - Video URL:', videoUrl);
@@ -1632,7 +1630,7 @@ function updateSidebarProfile(user) {
     if (user.profileImage) {
       const fullImageUrl = user.profileImage.startsWith('http') 
         ? user.profileImage 
-        : `createImageUrl(user.profileImage)`;
+        : `${API_URL}${user.profileImage}`;
       sidebarAvatar.src = fullImageUrl;
     } else {
       // Varsayılan avatar göster
@@ -1644,7 +1642,7 @@ function updateSidebarProfile(user) {
     if (user.profileImage) {
       const fullImageUrl = user.profileImage.startsWith('http') 
         ? user.profileImage 
-        : `createImageUrl(user.profileImage)`;
+        : `${API_URL}${user.profileImage}`;
       mobileProfileAvatar.src = fullImageUrl;
     } else {
       mobileProfileAvatar.src = 'images/logo.png';
@@ -1655,7 +1653,7 @@ function updateSidebarProfile(user) {
     if (user.profileImage) {
       const fullImageUrl = user.profileImage.startsWith('http') 
         ? user.profileImage 
-        : `createImageUrl(user.profileImage)`;
+        : `${API_URL}${user.profileImage}`;
       mobileMenuAvatar.src = fullImageUrl;
     } else {
       mobileMenuAvatar.src = 'images/logo.png';
@@ -1914,7 +1912,7 @@ function openCommentModal(tweetId) {
   if (user && user.profileImage && user.profileImage.trim() !== '') {
     const avatarUrl = user.profileImage.startsWith('http') 
       ? user.profileImage 
-      : `createImageUrl(user.profileImage)`;
+      : `${API_URL}${user.profileImage}`;
     commentAvatar.src = avatarUrl;
   } else {
     commentAvatar.src = 'images/logo.png';
@@ -2061,7 +2059,9 @@ function displayComments(comments) {
     // Avatar
     let avatarSrc = 'images/logo.png';
     if (comment.user.profileImage && comment.user.profileImage.trim() !== '') {
-      avatarSrc = createImageUrl(comment.user.profileImage);
+      avatarSrc = comment.user.profileImage.startsWith('http') 
+        ? comment.user.profileImage 
+        : `${API_URL}${comment.user.profileImage}`;
     }
     
     // Zaman formatı
@@ -2070,7 +2070,17 @@ function displayComments(comments) {
     // Yorum resmi
     let imageHtml = '';
     if (comment.image && comment.image.trim() !== '') {
-      const imageUrl = createImageUrl(comment.image);
+      const imageUrl = comment.image.startsWith('http') 
+        ? comment.image 
+        : `${API_URL}${comment.image}`;
+      
+      console.log('Comment image debug:', {
+        original: comment.image,
+        startsWithHttp: comment.image.startsWith('http'),
+        API_URL: API_URL,
+        finalUrl: imageUrl
+      });
+      
       imageHtml = `
         <div class="comment-image">
           <img src="${imageUrl}" alt="Comment image" />
@@ -2701,7 +2711,7 @@ function createNotificationElement(notification) {
   const userAvatar = notification.fromUser.profileImage 
     ? (notification.fromUser.profileImage.startsWith('http') 
         ? notification.fromUser.profileImage 
-        : `createImageUrl(notification.fromUser.profileImage)`)
+        : `${API_URL}${notification.fromUser.profileImage}`)
     : 'images/logo.png';
   
   notificationEl.innerHTML = `
