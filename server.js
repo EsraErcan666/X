@@ -56,6 +56,163 @@ const upload = multer({
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
+// Eski fotoğrafları base64'e çevirme migration endpoint'i
+app.post('/api/migrate-media', async (req, res) => {
+  try {
+    console.log('Medya migration başlatılıyor...');
+    
+    // Eski formatdaki tweet'leri bul (image var ama imageMimeType yok)
+    const oldTweets = await Tweet.find({
+      $and: [
+        { image: { $exists: true, $ne: '' } },
+        { 
+          $or: [
+            { imageMimeType: { $exists: false } },
+            { imageMimeType: '' }
+          ]
+        }
+      ]
+    });
+
+    console.log(`${oldTweets.length} eski tweet bulundu`);
+    let convertedCount = 0;
+    let errorCount = 0;
+
+    for (const tweet of oldTweets) {
+      try {
+        if (tweet.image.startsWith('/uploads/')) {
+          const imagePath = path.join(__dirname, tweet.image);
+          
+          // Dosya var mı kontrol et
+          if (fs.existsSync(imagePath)) {
+            // Dosyayı oku ve base64'e çevir
+            const imageBuffer = fs.readFileSync(imagePath);
+            const base64Data = imageBuffer.toString('base64');
+            
+            // MIME type'ı dosya uzantısından belirle
+            const ext = path.extname(tweet.image).toLowerCase();
+            let mimeType = '';
+            
+            switch (ext) {
+              case '.jpg':
+              case '.jpeg':
+                mimeType = 'image/jpeg';
+                break;
+              case '.png':
+                mimeType = 'image/png';
+                break;
+              case '.gif':
+                mimeType = 'image/gif';
+                break;
+              default:
+                mimeType = 'image/jpeg';
+            }
+            
+            // Tweet'i güncelle
+            await Tweet.findByIdAndUpdate(tweet._id, {
+              image: base64Data,
+              imageMimeType: mimeType
+            });
+            
+            convertedCount++;
+            console.log(`Tweet ${tweet._id} dönüştürüldü`);
+          } else {
+            console.log(`Dosya bulunamadı: ${imagePath}`);
+            // Dosya yoksa image alanını temizle
+            await Tweet.findByIdAndUpdate(tweet._id, {
+              image: '',
+              imageMimeType: ''
+            });
+          }
+        }
+      } catch (error) {
+        console.error(`Tweet ${tweet._id} dönüştürülürken hata:`, error);
+        errorCount++;
+      }
+    }
+
+    // Video migration
+    const oldVideoTweets = await Tweet.find({
+      $and: [
+        { video: { $exists: true, $ne: '' } },
+        { 
+          $or: [
+            { videoMimeType: { $exists: false } },
+            { videoMimeType: '' }
+          ]
+        }
+      ]
+    });
+
+    console.log(`${oldVideoTweets.length} eski video tweet bulundu`);
+
+    for (const tweet of oldVideoTweets) {
+      try {
+        if (tweet.video.startsWith('/uploads/')) {
+          const videoPath = path.join(__dirname, tweet.video);
+          
+          if (fs.existsSync(videoPath)) {
+            const videoBuffer = fs.readFileSync(videoPath);
+            const base64Data = videoBuffer.toString('base64');
+            
+            const ext = path.extname(tweet.video).toLowerCase();
+            let mimeType = '';
+            
+            switch (ext) {
+              case '.mp4':
+                mimeType = 'video/mp4';
+                break;
+              case '.avi':
+                mimeType = 'video/avi';
+                break;
+              case '.mov':
+                mimeType = 'video/quicktime';
+                break;
+              default:
+                mimeType = 'video/mp4';
+            }
+            
+            await Tweet.findByIdAndUpdate(tweet._id, {
+              video: base64Data,
+              videoMimeType: mimeType
+            });
+            
+            convertedCount++;
+            console.log(`Video tweet ${tweet._id} dönüştürüldü`);
+          } else {
+            console.log(`Video dosyası bulunamadı: ${videoPath}`);
+            await Tweet.findByIdAndUpdate(tweet._id, {
+              video: '',
+              videoMimeType: ''
+            });
+          }
+        }
+      } catch (error) {
+        console.error(`Video tweet ${tweet._id} dönüştürülürken hata:`, error);
+        errorCount++;
+      }
+    }
+
+    res.json({
+      success: true,
+      message: 'Medya migration tamamlandı',
+      stats: {
+        totalProcessed: oldTweets.length + oldVideoTweets.length,
+        converted: convertedCount,
+        errors: errorCount
+      }
+    });
+
+  } catch (error) {
+    console.error('Migration hatası:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Migration sırasında hata oluştu',
+      error: error.message
+    });
+  }
+});
+
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/xclone', {
   useNewUrlParser: true,
   useUnifiedTopology: true

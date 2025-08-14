@@ -3,6 +3,34 @@ const API_URL = window.location.hostname === 'localhost'
   ? 'http://localhost:3000' 
   : window.location.origin;
 
+// Medya migration fonksiyonu (geliştirici konsolundan çağrılabilir)
+window.migrateOldMedia = async function() {
+  try {
+    console.log('Eski medya dosyaları migration başlatılıyor...');
+    
+    const response = await fetch(`${API_URL}/api/migrate-media`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      console.log('Migration başarılı:', result);
+      alert(`Migration tamamlandı!\nİşlenen: ${result.stats.totalProcessed}\nDönüştürülen: ${result.stats.converted}\nHata: ${result.stats.errors}`);
+      location.reload(); // Sayfayı yenile
+    } else {
+      console.error('Migration hatası:', result);
+      alert('Migration sırasında hata oluştu: ' + result.message);
+    }
+  } catch (error) {
+    console.error('Migration request hatası:', error);
+    alert('Migration request sırasında hata oluştu');
+  }
+};
+
 // Sayfa yüklendiğinde login kontrolü
 (function() {
   const user = localStorage.getItem('user');
