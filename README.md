@@ -6,7 +6,7 @@ Modern bir sosyal medya platformu. Kullanıcılar tweet atabilir, resim/video pa
 
 - ✅ Kullanıcı kayıt ve giriş sistemi
 - ✅ Tweet oluşturma, silme ve görüntüleme
-- ✅ Resim ve video yükleme (Cloudinary entegrasyonu)
+- ✅ Resim ve video yükleme (Cloudinary entegrasyonu ile Vercel uyumlu)
 - ✅ Tweet beğenme ve yorum yapma
 - ✅ Profil güncelleme (profil resmi, banner, bio vb.)
 - ✅ Gerçek zamanlı bildirimler

@@ -9,6 +9,17 @@ const cloudinary = require('cloudinary').v2;
 const { User, Tweet, Comment, Notification } = require('./models/schemas');
 require('dotenv').config();
 
+// Environment variables validation
+if (!process.env.MONGODB_URI) {
+  console.error('MONGODB_URI environment variable is not set');
+  process.exit(1);
+}
+
+if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+  console.error('Cloudinary environment variables are not set');
+  process.exit(1);
+}
+
 // Cloudinary konfigürasyonu
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
