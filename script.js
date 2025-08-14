@@ -3,6 +3,26 @@ const API_URL = window.location.hostname === 'localhost'
   ? 'http://localhost:3000' 
   : window.location.origin;
 
+// Medya URL'si formatına çevirme helper fonksiyonu
+function formatImageUrl(imageData) {
+  if (!imageData || imageData.trim() === '') return '';
+  
+  // Data URL ise doğrudan kullan
+  if (imageData.startsWith('data:')) {
+    return imageData;
+  }
+  // Eski dosya yolu ise API_URL ile birleştir
+  else if (imageData.startsWith('/uploads/')) {
+    return `${API_URL}${imageData}`;
+  }
+  // HTTP URL ise doğrudan kullan
+  else if (imageData.startsWith('http')) {
+    return imageData;
+  }
+  
+  return imageData;
+}
+
 // Medya migration fonksiyonu (geliştirici konsolundan çağrılabilir)
 window.migrateOldMedia = async function() {
   try {
@@ -28,6 +48,34 @@ window.migrateOldMedia = async function() {
   } catch (error) {
     console.error('Migration request hatası:', error);
     alert('Migration request sırasında hata oluştu');
+  }
+};
+
+// Kullanıcı profil migration fonksiyonu (geliştirici konsolundan çağrılabilir)
+window.migrateUserMedia = async function() {
+  try {
+    console.log('Kullanıcı profil medyası migration başlatılıyor...');
+    
+    const response = await fetch(`${API_URL}/api/migrate-user-media`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      console.log('Kullanıcı migration başarılı:', result);
+      alert(`Kullanıcı migration tamamlandı!\nİşlenen: ${result.stats.totalProcessed}\nDönüştürülen: ${result.stats.converted}\nHata: ${result.stats.errors}`);
+      location.reload(); // Sayfayı yenile
+    } else {
+      console.error('Kullanıcı migration hatası:', result);
+      alert('Kullanıcı migration sırasında hata oluştu: ' + result.message);
+    }
+  } catch (error) {
+    console.error('Kullanıcı migration request hatası:', error);
+    alert('Kullanıcı migration request sırasında hata oluştu');
   }
 };
 
@@ -208,9 +256,7 @@ function createFollowItem(user) {
   // Profil resmi URL'sini doğru şekilde oluştur
   let profileImageSrc = '';
   if (user.profileImage && user.profileImage.trim() !== '') {
-    profileImageSrc = user.profileImage.startsWith('http') 
-      ? user.profileImage 
-      : `${API_URL}${user.profileImage}`;
+    profileImageSrc = formatImageUrl(user.profileImage);
   } else {
     // Varsayılan avatar göster
     profileImageSrc = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23657786"/%3E%3C/svg%3E';
@@ -441,9 +487,7 @@ function displayUserTweets(userTweets) {
     // Avatar
     const avatar = tweetEl.querySelector('.avatar');
     if (tweet.user.profileImage && tweet.user.profileImage.trim() !== '') {
-      const avatarUrl = tweet.user.profileImage.startsWith('http') 
-        ? tweet.user.profileImage 
-        : `${API_URL}${tweet.user.profileImage}`;
+      const avatarUrl = formatImageUrl(tweet.user.profileImage);
       avatar.src = avatarUrl;
     } else {
       avatar.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23fff"/%3E%3C/svg%3E';
@@ -579,17 +623,13 @@ function populateEditForm(user) {
   if (editWebsite) editWebsite.value = user.website || '';
   
   if (avatarPreview && user.profileImage) {
-    const fullImageUrl = user.profileImage.startsWith('http') 
-      ? user.profileImage 
-      : `${API_URL}${user.profileImage}`;
+    const fullImageUrl = formatImageUrl(user.profileImage);
     console.log('Avatar önizleme güncelleniyor:', fullImageUrl);
     avatarPreview.src = fullImageUrl;
   }
   
   if (currentBanner && user.bannerImage) {
-    const fullBannerUrl = user.bannerImage.startsWith('http') 
-      ? user.bannerImage 
-      : `${API_URL}${user.bannerImage}`;
+    const fullBannerUrl = formatImageUrl(user.bannerImage);
     console.log('Banner önizleme güncelleniyor:', fullBannerUrl);
     currentBanner.style.backgroundImage = `url(${fullBannerUrl})`;
     currentBanner.style.backgroundSize = 'cover';

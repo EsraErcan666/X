@@ -213,6 +213,137 @@ app.post('/api/migrate-media', async (req, res) => {
   }
 });
 
+// Kullanıcı profil migration endpoint'i (profil ve banner resimleri için)
+app.post('/api/migrate-user-media', async (req, res) => {
+  try {
+    console.log('Kullanıcı medya migration başlatılıyor...');
+    
+    // Eski formatdaki kullanıcıları bul (profileImage var ama data: ile başlamıyor)
+    const oldUsers = await User.find({
+      $or: [
+        {
+          $and: [
+            { profileImage: { $exists: true, $ne: '' } },
+            { profileImage: { $not: /^data:/ } }
+          ]
+        },
+        {
+          $and: [
+            { bannerImage: { $exists: true, $ne: '' } },
+            { bannerImage: { $not: /^data:/ } }
+          ]
+        }
+      ]
+    });
+
+    console.log(`${oldUsers.length} eski kullanıcı bulundu`);
+    let convertedCount = 0;
+    let errorCount = 0;
+
+    for (const user of oldUsers) {
+      try {
+        const updateData = {};
+        
+        // Profile image migration
+        if (user.profileImage && !user.profileImage.startsWith('data:') && user.profileImage.startsWith('/uploads/')) {
+          const imagePath = path.join(__dirname, user.profileImage);
+          
+          if (fs.existsSync(imagePath)) {
+            const imageBuffer = fs.readFileSync(imagePath);
+            const base64Data = imageBuffer.toString('base64');
+            
+            const ext = path.extname(user.profileImage).toLowerCase();
+            let mimeType = '';
+            
+            switch (ext) {
+              case '.jpg':
+              case '.jpeg':
+                mimeType = 'image/jpeg';
+                break;
+              case '.png':
+                mimeType = 'image/png';
+                break;
+              case '.gif':
+                mimeType = 'image/gif';
+                break;
+              default:
+                mimeType = 'image/jpeg';
+            }
+            
+            updateData.profileImage = `data:${mimeType};base64,${base64Data}`;
+            console.log(`Kullanıcı ${user._id} profil resmi dönüştürüldü`);
+          } else {
+            updateData.profileImage = '';
+            console.log(`Profil resmi dosyası bulunamadı: ${imagePath}`);
+          }
+        }
+        
+        // Banner image migration
+        if (user.bannerImage && !user.bannerImage.startsWith('data:') && user.bannerImage.startsWith('/uploads/')) {
+          const imagePath = path.join(__dirname, user.bannerImage);
+          
+          if (fs.existsSync(imagePath)) {
+            const imageBuffer = fs.readFileSync(imagePath);
+            const base64Data = imageBuffer.toString('base64');
+            
+            const ext = path.extname(user.bannerImage).toLowerCase();
+            let mimeType = '';
+            
+            switch (ext) {
+              case '.jpg':
+              case '.jpeg':
+                mimeType = 'image/jpeg';
+                break;
+              case '.png':
+                mimeType = 'image/png';
+                break;
+              case '.gif':
+                mimeType = 'image/gif';
+                break;
+              default:
+                mimeType = 'image/jpeg';
+            }
+            
+            updateData.bannerImage = `data:${mimeType};base64,${base64Data}`;
+            console.log(`Kullanıcı ${user._id} banner resmi dönüştürüldü`);
+          } else {
+            updateData.bannerImage = '';
+            console.log(`Banner resmi dosyası bulunamadı: ${imagePath}`);
+          }
+        }
+        
+        // Güncelleme varsa kaydet
+        if (Object.keys(updateData).length > 0) {
+          await User.findByIdAndUpdate(user._id, updateData);
+          convertedCount++;
+        }
+        
+      } catch (error) {
+        console.error(`Kullanıcı ${user._id} dönüştürülürken hata:`, error);
+        errorCount++;
+      }
+    }
+
+    res.json({
+      success: true,
+      message: 'Kullanıcı medya migration tamamlandı',
+      stats: {
+        totalProcessed: oldUsers.length,
+        converted: convertedCount,
+        errors: errorCount
+      }
+    });
+
+  } catch (error) {
+    console.error('Kullanıcı migration hatası:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Kullanıcı migration sırasında hata oluştu',
+      error: error.message
+    });
+  }
+});
+
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/xclone', {
   useNewUrlParser: true,
   useUnifiedTopology: true
