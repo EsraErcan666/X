@@ -730,6 +730,8 @@ app.post('/api/tweets', upload.fields([
       const imageFileName = `image-${Date.now()}-${Math.round(Math.random() * 1E9)}.${imageFile.originalname.split('.').pop()}`;
       imagePath = path.join('uploads', imageFileName);
       
+      console.log('Tweet resmi yükleniyor:', imageFileName);
+      
       // Vercel'de dosya sistemi yazma yerine memory'de tutacağız ve /uploads route'undan serve edeceğiz
       try {
         const uploadsDir = path.join(__dirname, 'uploads');
@@ -737,16 +739,27 @@ app.post('/api/tweets', upload.fields([
           fs.mkdirSync(uploadsDir, { recursive: true });
         }
         fs.writeFileSync(path.join(__dirname, imagePath), imageFile.buffer);
+        console.log('Tweet resmi dosya sistemine kaydedildi');
       } catch (error) {
         console.error('Dosya yazma hatası:', error);
         // Vercel'de yazma başarısız olursa, uploads route'unda memory'den serve edeceğiz
       }
+      
+      // Dosyayı memory'de de tut (Vercel için)
+      fileMemoryStore.set(imageFileName, {
+        buffer: imageFile.buffer,
+        mimetype: imageFile.mimetype,
+        originalname: imageFile.originalname
+      });
+      console.log('Tweet resmi memory store\'a eklendi:', imageFileName);
     }
 
     if (req.files && req.files.video) {
       const videoFile = req.files.video[0];
       const videoFileName = `video-${Date.now()}-${Math.round(Math.random() * 1E9)}.${videoFile.originalname.split('.').pop()}`;
       videoPath = path.join('uploads', videoFileName);
+      
+      console.log('Tweet videosu yükleniyor:', videoFileName);
       
       // Vercel'de dosya sistemi yazma yerine memory'de tutacağız ve /uploads route'undan serve edeceğiz
       try {
@@ -755,18 +768,34 @@ app.post('/api/tweets', upload.fields([
           fs.mkdirSync(uploadsDir, { recursive: true });
         }
         fs.writeFileSync(path.join(__dirname, videoPath), videoFile.buffer);
+        console.log('Tweet videosu dosya sistemine kaydedildi');
       } catch (error) {
         console.error('Dosya yazma hatası:', error);
         // Vercel'de yazma başarısız olursa, uploads route'unda memory'den serve edeceğiz
       }
+      
+      // Dosyayı memory'de de tut (Vercel için)
+      fileMemoryStore.set(videoFileName, {
+        buffer: videoFile.buffer,
+        mimetype: videoFile.mimetype,
+        originalname: videoFile.originalname
+      });
+      console.log('Tweet videosu memory store\'a eklendi:', videoFileName);
     }
 
     const newTweet = new Tweet({
       content: sanitizedContent,
       userId: userId,
-      image: imagePath,
-      video: videoPath,
+      image: imagePath ? '/' + imagePath : '',
+      video: videoPath ? '/' + videoPath : '',
       views: 1 // İlk görüntüleme
+    });
+
+    console.log('Tweet kaydedilecek veriler:', {
+      content: sanitizedContent,
+      userId: userId,
+      image: imagePath ? '/' + imagePath : '',
+      video: videoPath ? '/' + videoPath : ''
     });
 
     await newTweet.save();
