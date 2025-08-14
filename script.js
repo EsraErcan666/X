@@ -1381,7 +1381,7 @@ function renderTweets() {
     // Tweet videosu
     const videoDiv = tweetEl.querySelector('.tweet-video');
     console.log('renderTweets - Video kontrolü - tweet.video:', tweet.video);
-    if (tweet.video && tweet.video.trim() !== '') {
+    if (tweet.video && tweet.video.trim() !== '' && tweet.video !== 'undefined' && !tweet.video.includes('undefined')) {
       console.log('renderTweets - Video bulundu, gösteriliyor:', tweet.video);
       videoDiv.style.display = 'block';
       const videoEl = videoDiv.querySelector('video');
