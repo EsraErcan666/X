@@ -53,6 +53,9 @@ const upload = multer({
   }
 });
 
+// Global memory storage for uploaded files (Vercel için)
+const fileMemoryStore = new Map();
+
 // Static files servis etme
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
@@ -513,6 +516,8 @@ app.put('/api/user/:userId', upload.fields([
       console.log('Profil resmi dosya adı:', profileImageFileName);
       console.log('Profil resmi yolu:', profileImagePath);
       
+      // Vercel'de dosya yazma deneme, başarısız olursa memory'de tut
+      let fileWritten = false;
       try {
         const uploadsDir = path.join(__dirname, 'uploads');
         if (!fs.existsSync(uploadsDir)) {
@@ -520,12 +525,25 @@ app.put('/api/user/:userId', upload.fields([
           console.log('Uploads klasörü oluşturuldu');
         }
         fs.writeFileSync(path.join(__dirname, profileImagePath), profileImageFile.buffer);
-        updateData.profileImage = '/' + profileImagePath;
-        console.log('Profil resmi başarıyla kaydedildi:', updateData.profileImage);
+        fileWritten = true;
+        console.log('Profil resmi dosya sistemine başarıyla kaydedildi');
       } catch (error) {
-        console.error('Profil resmi kaydetme hatası:', error);
-        // Dosya kaydedilemezse mevcut profil resmini koru
+        console.error('Dosya yazma hatası (Vercel beklenen durum):', error.message);
+        // Vercel'de dosya yazma başarısız olursa memory'de tut
+        fileWritten = false;
       }
+      
+      // Dosyayı memory'de de tut (Vercel için)
+      fileMemoryStore.set(profileImageFileName, {
+        buffer: profileImageFile.buffer,
+        mimetype: profileImageFile.mimetype,
+        originalname: profileImageFile.originalname
+      });
+      console.log('Profil resmi memory store\'a eklendi:', profileImageFileName);
+      
+      // Her durumda database'e yolu kaydet
+      updateData.profileImage = '/' + profileImagePath;
+      console.log('Profil resmi database\'e kaydedilecek yol:', updateData.profileImage);
     } else {
       console.log('Profil resmi yüklenmedi');
     }
@@ -547,6 +565,8 @@ app.put('/api/user/:userId', upload.fields([
       console.log('Banner resmi dosya adı:', bannerImageFileName);
       console.log('Banner resmi yolu:', bannerImagePath);
       
+      // Vercel'de dosya yazma deneme, başarısız olursa memory'de tut
+      let fileWritten = false;
       try {
         const uploadsDir = path.join(__dirname, 'uploads');
         if (!fs.existsSync(uploadsDir)) {
@@ -554,12 +574,25 @@ app.put('/api/user/:userId', upload.fields([
           console.log('Uploads klasörü oluşturuldu');
         }
         fs.writeFileSync(path.join(__dirname, bannerImagePath), bannerImageFile.buffer);
-        updateData.bannerImage = '/' + bannerImagePath;
-        console.log('Banner resmi başarıyla kaydedildi:', updateData.bannerImage);
+        fileWritten = true;
+        console.log('Banner resmi dosya sistemine başarıyla kaydedildi');
       } catch (error) {
-        console.error('Banner resmi kaydetme hatası:', error);
-        // Dosya kaydedilemezse mevcut banner resmini koru
+        console.error('Dosya yazma hatası (Vercel beklenen durum):', error.message);
+        // Vercel'de dosya yazma başarısız olursa memory'de tut
+        fileWritten = false;
       }
+      
+      // Dosyayı memory'de de tut (Vercel için)
+      fileMemoryStore.set(bannerImageFileName, {
+        buffer: bannerImageFile.buffer,
+        mimetype: bannerImageFile.mimetype,
+        originalname: bannerImageFile.originalname
+      });
+      console.log('Banner resmi memory store\'a eklendi:', bannerImageFileName);
+      
+      // Her durumda database'e yolu kaydet
+      updateData.bannerImage = '/' + bannerImagePath;
+      console.log('Banner resmi database\'e kaydedilecek yol:', updateData.bannerImage);
     } else {
       console.log('Banner resmi yüklenmedi');
     }
@@ -1488,8 +1521,23 @@ app.get('/uploads/:filename', (req, res) => {
     const { filename } = req.params;
     const filePath = path.join(__dirname, 'uploads', filename);
     
-    // Dosya varlığını kontrol et
+    // Önce memory store'dan kontrol et (Vercel için)
+    if (fileMemoryStore.has(filename)) {
+      console.log('Dosya memory store\'dan serve ediliyor:', filename);
+      const fileData = fileMemoryStore.get(filename);
+      
+      res.set({
+        'Content-Type': fileData.mimetype,
+        'Cache-Control': 'public, max-age=31536000', // 1 yıl cache
+        'Access-Control-Allow-Origin': '*'
+      });
+      
+      return res.send(fileData.buffer);
+    }
+    
+    // Memory store'da yoksa dosya sisteminden kontrol et
     if (!fs.existsSync(filePath)) {
+      console.log('Dosya bulunamadı:', filename);
       return res.status(404).json({
         success: false,
         message: 'Dosya bulunamadı'
