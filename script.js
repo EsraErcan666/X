@@ -158,17 +158,29 @@ function formatTimestamp(timestamp) {
 
 async function loadTopUsers() {
   try {
-    const response = await fetch(`${API_URL}/api/top-users`);	
+    const response = await fetch(`${API_URL}/api/top-users`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
 
     const data = await response.json();
     
-    if (data.success && data.users.length > 0) {
-      updateWhoToFollowSection(data.users);
+    if (data.success) {
+      if (data.users && data.users.length > 0) {
+        updateWhoToFollowSection(data.users);
+      } else {
+        console.log('Henüz tweet atan kullanıcı yok:', data.message || 'Boş sonuç');
+        // Boş durumda varsayılan içerik göster
+        updateWhoToFollowSectionEmpty();
+      }
     } else {
-      console.log('En çok posta sahip kullanıcı bulunamadı');
+      console.error('Top users API hatası:', data.message);
     }
   } catch (error) {
     console.error('En çok posta sahip kullanıcıları yükleme hatası:', error);
+    // Hata durumunda varsayılan içerik göster
+    updateWhoToFollowSectionEmpty();
   }
 }
 
@@ -189,6 +201,33 @@ function updateWhoToFollowSection(users) {
         section.appendChild(followItem);
       }
     });
+  });
+}
+
+function updateWhoToFollowSectionEmpty() {
+  const whoToFollowSections = document.querySelectorAll('.who-to-follow, .who-to-follow-section');
+  
+  whoToFollowSections.forEach(section => {
+    const existingItems = section.querySelectorAll('.follow-item');
+    existingItems.forEach(item => item.remove());
+    
+    const showMoreElement = section.querySelector('.show-more');
+    
+    // Boş durum mesajı göster
+    const emptyMessage = document.createElement('div');
+    emptyMessage.className = 'follow-item empty-state';
+    emptyMessage.innerHTML = `
+      <div style="padding: 16px; text-align: center; color: #65676B;">
+        <p>Henüz hiç tweet yok</p>
+        <small>İlk tweeti sen at!</small>
+      </div>
+    `;
+    
+    if (showMoreElement) {
+      section.insertBefore(emptyMessage, showMoreElement);
+    } else {
+      section.appendChild(emptyMessage);
+    }
   });
 }
 
@@ -766,7 +805,7 @@ function setupCharacterCounters() {
   });
 }
 
-function saveProfile() {
+async function saveProfile() {
   const formData = new FormData();
   
   // Kullanıcı girişlerini güvenli hale getir
@@ -801,12 +840,21 @@ function saveProfile() {
   
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const userId = user._id || localStorage.getItem('currentUserId') || '507f1f77bcf86cd799439011';
-  fetch(`${API_URL}/api/user/${userId}`, { 
-    method: 'PUT',
-    body: formData
-  })
-  .then(response => response.json())
-  .then(data => {
+  
+  try {
+    const response = await fetch(`${API_URL}/api/user/${userId}`, { 
+      method: 'PUT',
+      body: formData
+    });
+    
+    // Response'un JSON olup olmadığını kontrol et
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      throw new Error('Server HTML döndürdü, JSON beklenmiyordu. API routing sorunu olabilir.');
+    }
+    
+    const data = await response.json();
+    
     if (data.success) {
       updateProfileDisplay(data.user);
       populateEditForm(data.user);
@@ -819,11 +867,14 @@ function saveProfile() {
     } else {
       showNotification('Hata: ' + data.message, 'error');
     }
-  })
-  .catch(error => {
+  } catch (error) {
     console.error('Profil güncelleme hatası:', error);
-    showNotification('Profil güncellenirken bir hata oluştu.', 'error');
-  });
+    if (error.message.includes('HTML döndürdü')) {
+      showNotification('Server hatası: API routes çalışmıyor. Vercel deployment kontrol edilmeli.', 'error');
+    } else {
+      showNotification('Profil güncellenirken bir hata oluştu.', 'error');
+    }
+  }
 }
 
 function updateProfileDisplay(user) {

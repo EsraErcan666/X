@@ -65,7 +65,17 @@ const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB bağlantı hatası:'));
 db.once('open', () => {
   console.log('MongoDB bağlantısı başarılı!');
+  console.log('NODE_ENV:', process.env.NODE_ENV);
+  console.log('MONGODB_URI:', process.env.MONGODB_URI ? 'Set' : 'Not set');
 });
+
+// Request logging middleware (sadece development'da)
+if (process.env.NODE_ENV !== 'production') {
+  app.use((req, res, next) => {
+    console.log(`${req.method} ${req.path}`, req.body);
+    next();
+  });
+}
 
 // Dosya silme yardımcı fonksiyonu
 function deleteFileIfExists(filePath) {
@@ -1308,6 +1318,15 @@ app.get('/api/top-users', async (req, res) => {
       }
     ]);
 
+    // Eğer hiç kullanıcı bulunamazsa boş array döndür
+    if (!topUsers || topUsers.length === 0) {
+      return res.json({
+        success: true,
+        users: [],
+        message: 'Henüz tweet atan kullanıcı yok'
+      });
+    }
+
     res.json({
       success: true,
       users: topUsers
@@ -1317,7 +1336,8 @@ app.get('/api/top-users', async (req, res) => {
     console.error('En çok posta sahip kullanıcıları getirme hatası:', error);
     res.status(500).json({
       success: false,
-      message: 'Sunucu hatası'
+      message: 'Sunucu hatası',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
