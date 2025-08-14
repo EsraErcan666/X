@@ -13,7 +13,9 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:3000', 'file://', 'null'],
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://x-tau-jet.vercel.app', 'https://*.vercel.app'] 
+    : ['http://localhost:3000', 'file://', 'null'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
