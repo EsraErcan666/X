@@ -3,6 +3,12 @@ const API_URL = window.location.hostname === 'localhost'
   ? 'http://localhost:3000' 
   : window.location.origin;
 
+console.log('API_URL Debug:', {
+  hostname: window.location.hostname,
+  origin: window.location.origin,
+  API_URL: API_URL
+});
+
 // Test için geçici kullanıcı oluştur
 if (!localStorage.getItem('user')) {
   const testUser = {
@@ -498,6 +504,14 @@ function displayUserTweets(userTweets) {
       const avatarUrl = tweet.user.profileImage.startsWith('http') 
         ? tweet.user.profileImage 
         : `${API_URL}${tweet.user.profileImage}`;
+      
+      console.log('Avatar URL Debug:', {
+        originalProfileImage: tweet.user.profileImage,
+        startsWithHttp: tweet.user.profileImage.startsWith('http'),
+        API_URL: API_URL,
+        finalAvatarUrl: avatarUrl
+      });
+      
       avatar.src = avatarUrl;
     } else {
       avatar.src = 'images/logo.png';
@@ -528,9 +542,15 @@ function displayUserTweets(userTweets) {
         ? tweet.image 
         : `${API_URL}${tweet.image}`;
       
+      console.log('Tweet Image URL Debug:', {
+        originalImage: tweet.image,
+        startsWithHttp: tweet.image.startsWith('http'),
+        API_URL: API_URL,
+        finalImageUrl: imageUrl
+      });
+      
       imageImg.src = imageUrl;
       imageImg.alt = 'Tweet image';
-      console.log('Tweet image URL:', imageUrl);
     } else {
       imageDiv.style.display = 'none';
     }
