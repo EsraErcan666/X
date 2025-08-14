@@ -182,7 +182,7 @@ function createFollowItem(user) {
   if (user.profileImage && user.profileImage.trim() !== '') {
     profileImageSrc = user.profileImage.startsWith('http') 
       ? user.profileImage 
-      : `http://localhost:3000${user.profileImage}`;
+      : `${API_URL}${user.profileImage}`;
   } else {
     // Varsayılan avatar göster
     profileImageSrc = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23657786"/%3E%3C/svg%3E';
@@ -415,7 +415,7 @@ function displayUserTweets(userTweets) {
     if (tweet.user.profileImage && tweet.user.profileImage.trim() !== '') {
       const avatarUrl = tweet.user.profileImage.startsWith('http') 
         ? tweet.user.profileImage 
-        : `http://localhost:3000${tweet.user.profileImage}`;
+        : `${API_URL}${tweet.user.profileImage}`;
       avatar.src = avatarUrl;
     } else {
       avatar.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23fff"/%3E%3C/svg%3E';
@@ -442,7 +442,7 @@ function displayUserTweets(userTweets) {
       const imageImg = imageDiv.querySelector('img');
       const imageUrl = tweet.image.startsWith('http') 
         ? tweet.image 
-        : `http://localhost:3000${tweet.image}`;
+        : `${API_URL}${tweet.image}`;
       imageImg.src = imageUrl;
       imageImg.alt = 'Tweet image';
     } else {
@@ -457,7 +457,7 @@ function displayUserTweets(userTweets) {
       const videoSource = videoEl.querySelector('source');
       const videoUrl = tweet.video.startsWith('http') 
         ? tweet.video 
-        : `http://localhost:3000${tweet.video}`;
+        : `${API_URL}${tweet.video}`;
       videoSource.src = videoUrl;
       videoSource.type = getVideoMimeType(tweet.video);
       videoEl.load(); // Video'yu yeniden yükle
@@ -545,7 +545,7 @@ function populateEditForm(user) {
   if (avatarPreview && user.profileImage) {
     const fullImageUrl = user.profileImage.startsWith('http') 
       ? user.profileImage 
-      : `http://localhost:3000${user.profileImage}`;
+      : `${API_URL}${user.profileImage}`;
     console.log('Avatar önizleme güncelleniyor:', fullImageUrl);
     avatarPreview.src = fullImageUrl;
   }
@@ -553,7 +553,7 @@ function populateEditForm(user) {
   if (currentBanner && user.bannerImage) {
     const fullBannerUrl = user.bannerImage.startsWith('http') 
       ? user.bannerImage 
-      : `http://localhost:3000${user.bannerImage}`;
+      : `${API_URL}${user.bannerImage}`;
     console.log('Banner önizleme güncelleniyor:', fullBannerUrl);
     currentBanner.style.backgroundImage = `url(${fullBannerUrl})`;
     currentBanner.style.backgroundSize = 'cover';
@@ -829,7 +829,7 @@ function updateProfileDisplay(user) {
   if (user.profileImage && user.profileImage.trim() !== '') {
     const fullImageUrl = user.profileImage.startsWith('http') 
       ? user.profileImage 
-      : `http://localhost:3000${user.profileImage}`;
+      : `${API_URL}${user.profileImage}`;
       
     if (profileAvatar) {
       profileAvatar.src = fullImageUrl;
@@ -854,7 +854,7 @@ function updateProfileDisplay(user) {
     if (user.bannerImage && user.bannerImage.trim() !== '') {
       const fullBannerUrl = user.bannerImage.startsWith('http') 
         ? user.bannerImage 
-        : `http://localhost:3000${user.bannerImage}`;
+        : `${API_URL}${user.bannerImage}`;
       bannerImage.style.backgroundImage = `url(${fullBannerUrl})`;
       bannerImage.style.backgroundSize = 'cover';
       bannerImage.style.backgroundPosition = 'center';
@@ -1153,7 +1153,7 @@ function updateModalUserAvatar() {
   if (user && user.profileImage && user.profileImage.trim() !== '') {
     const avatarUrl = user.profileImage.startsWith('http') 
       ? user.profileImage 
-      : `http://localhost:3000${user.profileImage}`;
+      : `${API_URL}${user.profileImage}`;
     modalAvatar.src = avatarUrl;
   } else {
     // Varsayılan avatar
@@ -1269,7 +1269,7 @@ function renderTweets() {
     if (tweet.avatar && tweet.avatar.trim() !== '') {
       const avatarUrl = tweet.avatar.startsWith('http') 
         ? tweet.avatar 
-        : `http://localhost:3000${tweet.avatar}`;
+        : `${API_URL}${tweet.avatar}`;
       avatar.src = avatarUrl;
     } else {
       // Varsayılan avatar
@@ -1311,7 +1311,7 @@ function renderTweets() {
       const imageImg = imageDiv.querySelector('img');
       const imageUrl = tweet.image.startsWith('http') 
         ? tweet.image 
-        : `http://localhost:3000${tweet.image}`;
+        : `${API_URL}${tweet.image}`;
       imageImg.src = imageUrl;
       imageImg.alt = 'Tweet image';
     } else {
@@ -1328,7 +1328,7 @@ function renderTweets() {
       const videoSource = videoEl.querySelector('source');
       const videoUrl = tweet.video.startsWith('http') 
         ? tweet.video 
-        : `http://localhost:3000${tweet.video}`;
+        : `${API_URL}${tweet.video}`;
       console.log('renderTweets - Video URL:', videoUrl);
       videoSource.src = videoUrl;
       videoSource.type = getVideoMimeType(tweet.video);
@@ -1431,7 +1431,7 @@ function updateSidebarProfile(user) {
     if (user.profileImage) {
       const fullImageUrl = user.profileImage.startsWith('http') 
         ? user.profileImage 
-        : `http://localhost:3000${user.profileImage}`;
+        : `${API_URL}${user.profileImage}`;
       sidebarAvatar.src = fullImageUrl;
     } else {
       // Varsayılan avatar göster
@@ -1443,7 +1443,7 @@ function updateSidebarProfile(user) {
     if (user.profileImage) {
       const fullImageUrl = user.profileImage.startsWith('http') 
         ? user.profileImage 
-        : `http://localhost:3000${user.profileImage}`;
+        : `${API_URL}${user.profileImage}`;
       mobileProfileAvatar.src = fullImageUrl;
     } else {
       mobileProfileAvatar.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"%3E%3Ccircle cx="16" cy="16" r="16" fill="%23e1e8ed"/%3E%3Cpath d="M16 6c2.65 0 4.8 2.15 4.8 4.8s-2.15 4.8-4.8 4.8-4.8-2.15-4.8-4.8S13.35 6 16 6zM16 19.2c-5.3 0-9.6 2.7-9.6 6V28h19.2v-2.8c0-3.3-4.3-6-9.6-6z" fill="%23fff"/%3E%3C/svg%3E';
@@ -1454,7 +1454,7 @@ function updateSidebarProfile(user) {
     if (user.profileImage) {
       const fullImageUrl = user.profileImage.startsWith('http') 
         ? user.profileImage 
-        : `http://localhost:3000${user.profileImage}`;
+        : `${API_URL}${user.profileImage}`;
       mobileMenuAvatar.src = fullImageUrl;
     } else {
       mobileMenuAvatar.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23fff"/%3E%3C/svg%3E';
@@ -1688,7 +1688,7 @@ function openCommentModal(tweetId) {
   if (tweet.avatar && tweet.avatar.trim() !== '') {
     const avatarUrl = tweet.avatar.startsWith('http') 
       ? tweet.avatar 
-      : `http://localhost:3000${tweet.avatar}`;
+      : `http://localhost:${tweet.avatar}`;
     originalAvatar.src = avatarUrl;
   } else {
     originalAvatar.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23fff"/%3E%3C/svg%3E';
@@ -1704,7 +1704,7 @@ function openCommentModal(tweetId) {
     originalImage.style.display = 'block';
     const imageUrl = tweet.image.startsWith('http') 
       ? tweet.image 
-      : `http://localhost:3000${tweet.image}`;
+      : `${API_URL}${tweet.image}`;
     originalImage.querySelector('img').src = imageUrl;
   } else {
     originalImage.style.display = 'none';
@@ -1716,7 +1716,7 @@ function openCommentModal(tweetId) {
   if (user && user.profileImage && user.profileImage.trim() !== '') {
     const avatarUrl = user.profileImage.startsWith('http') 
       ? user.profileImage 
-      : `http://localhost:3000${user.profileImage}`;
+      : `${API_URL}${user.profileImage}`;
     commentAvatar.src = avatarUrl;
   } else {
     commentAvatar.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Ccircle cx="20" cy="20" r="20" fill="%23e1e8ed"/%3E%3Cpath d="M20 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zM20 24c-6.63 0-12 3.37-12 7.5V35h24v-3.5c0-4.13-5.37-7.5-12-7.5z" fill="%23fff"/%3E%3C/svg%3E';
@@ -1865,7 +1865,7 @@ function displayComments(comments) {
     if (comment.user.profileImage && comment.user.profileImage.trim() !== '') {
       avatarSrc = comment.user.profileImage.startsWith('http') 
         ? comment.user.profileImage 
-        : `http://localhost:3000${comment.user.profileImage}`;
+        : `${API_URL}${comment.user.profileImage}`;
     }
     
     // Zaman formatı
@@ -1876,7 +1876,7 @@ function displayComments(comments) {
     if (comment.image && comment.image.trim() !== '') {
       const imageUrl = comment.image.startsWith('http') 
         ? comment.image 
-        : `http://localhost:3000${comment.image}`;
+        : `${API_URL}${comment.image}`;
       imageHtml = `
         <div class="comment-image">
           <img src="${imageUrl}" alt="Comment image" />
@@ -2146,7 +2146,7 @@ function createTweetElement(tweet) {
   if (tweet.avatar && tweet.avatar.trim() !== '') {
     const avatarUrl = tweet.avatar.startsWith('http') 
       ? tweet.avatar 
-      : `http://localhost:3000${tweet.avatar}`;
+      : `${API_URL}${tweet.avatar}`;
     avatar.src = avatarUrl;
   } else {
     // Varsayılan avatar
@@ -2188,7 +2188,7 @@ function createTweetElement(tweet) {
     const imageImg = imageDiv.querySelector('img');
     const imageUrl = tweet.image.startsWith('http') 
       ? tweet.image 
-      : `http://localhost:3000${tweet.image}`;
+      : `${API_URL}${tweet.image}`;
     imageImg.src = imageUrl;
     imageImg.alt = 'Tweet image';
   } else {
@@ -2203,7 +2203,7 @@ function createTweetElement(tweet) {
     const videoSource = videoEl.querySelector('source');
     const videoUrl = tweet.video.startsWith('http') 
       ? tweet.video 
-      : `http://localhost:3000${tweet.video}`;
+      : `${API_URL}${tweet.video}`;
     videoSource.src = videoUrl;
     videoSource.type = getVideoMimeType(tweet.video);
     videoEl.load(); // Video'yu yeniden yükle
@@ -2513,7 +2513,7 @@ function createNotificationElement(notification) {
   const userAvatar = notification.fromUser.profileImage 
     ? (notification.fromUser.profileImage.startsWith('http') 
         ? notification.fromUser.profileImage 
-        : `http://localhost:3000${notification.fromUser.profileImage}`)
+        : `${API_URL}${notification.fromUser.profileImage}`)
     : 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"%3E%3Ccircle cx="16" cy="16" r="16" fill="%23e1e8ed"/%3E%3Cpath d="M16 6c2.65 0 4.8 2.15 4.8 4.8s-2.15 4.8-4.8 4.8-4.8-2.15-4.8-4.8S13.35 6 16 6zM16 19.2c-5.3 0-9.6 2.7-9.6 6v2.4h19.2v-2.4c0-3.3-4.3-6-9.6-6z" fill="%23657786"/%3E%3C/svg%3E';
   
   notificationEl.innerHTML = `
