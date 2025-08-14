@@ -312,10 +312,18 @@ function setupProfileMenu() {
   
   if (logoutItem) {
     logoutItem.addEventListener('click', function() {
+      console.log('Profile logout işlemi başlatılıyor...');
+      
       // localStorage'ı temizle
       localStorage.removeItem('user');
       localStorage.removeItem('currentUserId');
-      window.location.href = 'login.html';
+      localStorage.removeItem('authToken');
+      
+      console.log('Profile logout - LocalStorage temizlendi');
+      
+      // Login sayfasına yönlendir - Vercel routing uyumlu
+      console.log('Profile logout - Login sayfasına yönlendiriliyor...');
+      window.location.href = '/';
     });
   }
 }
