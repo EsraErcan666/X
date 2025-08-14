@@ -60,6 +60,7 @@ body {
   border-radius: 50px;
   transition: background-color 0.2s;
   flex-shrink: 0;
+  position: relative;
 }
 
 .profile-section:hover {
@@ -120,14 +121,15 @@ body {
 .profile-dropdown {
   display: none;
   position: absolute;
-  bottom: 45px;
+  bottom: 100%;
   right: 0;
   background-color: #000;
-  border-radius: 16px;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 2px 15px rgba(255, 255, 255, 0.15);
   border: 1px solid #2f3336;
-  width: 250px;
-  z-index: 10;
+  width: 200px;
+  z-index: 1000;
+  margin-bottom: 8px;
 }
 
 .profile-dropdown.show {
@@ -135,11 +137,12 @@ body {
 }
 
 .dropdown-item {
-  padding: 16px;
+  padding: 12px 16px;
   display: flex;
   align-items: center;
   transition: background-color 0.2s;
   cursor: pointer;
+  font-size: 15px;
 }
 
 .dropdown-item:hover {
@@ -641,6 +644,14 @@ button.disabled:hover {
 }
 
 .tweet-action.like:hover {
+  color: #e0245e;
+}
+
+.tweet-action.like-action.liked {
+  color: #e0245e;
+}
+
+.tweet-action.like-action.liked i {
   color: #e0245e;
 }
 
@@ -1565,6 +1576,12 @@ button.disabled:hover {
   overflow-y: auto;
   position: relative;
   border: 1px solid #2f3336;
+  scrollbar-width: none; /* Firefox için */
+  -ms-overflow-style: none; /* Internet Explorer ve Edge için */
+}
+
+.comment-modal-content::-webkit-scrollbar {
+  display: none; /* Chrome, Safari ve Opera için */
 }
 
 .comment-modal-header {
@@ -1735,6 +1752,12 @@ button.disabled:hover {
 .comments-list {
   max-height: 400px;
   overflow-y: auto;
+  scrollbar-width: none; /* Firefox için */
+  -ms-overflow-style: none; /* Internet Explorer ve Edge için */
+}
+
+.comments-list::-webkit-scrollbar {
+  display: none; /* Chrome, Safari ve Opera için */
 }
 
 .comment-item {

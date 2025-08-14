@@ -3,13 +3,26 @@ const API_URL = window.location.hostname === 'localhost'
   ? 'http://localhost:3000' 
   : window.location.origin;
 
-// Sayfa yüklendiğinde login kontrolü
+// Test için geçici kullanıcı oluştur
+if (!localStorage.getItem('user')) {
+  const testUser = {
+    _id: '60a5f9c5a1b2c3d4e5f6g7h8',
+    username: 'testuser',
+    displayName: 'Test User',
+    email: 'test@example.com'
+  };
+  localStorage.setItem('user', JSON.stringify(testUser));
+}
+
+// Sayfa yüklendiğinde login kontrolü (test için devre dışı)
+/*
 (function() {
   const user = localStorage.getItem('user');
   if (!user) {
     window.location.href = 'Login.html';
   }
 })();
+*/
 
 // Authentication kontrolü fonksiyonu
 function checkAuthentication() {
@@ -83,7 +96,15 @@ let tweets = [];
 // Tweet'leri veritabanından yükle
 async function loadTweets() {
   try {
-    const response = await fetch(`${API_URL}/api/tweets`);
+    const user = JSON.parse(localStorage.getItem('user'));
+    let url = `${API_URL}/api/tweets`;
+    
+    // Kullanıcı giriş yapmışsa userId'yi ekle
+    if (user && user._id) {
+      url += `?userId=${user._id}`;
+    }
+    
+    const response = await fetch(url);
     const data = await response.json();
     
     if (data.success) {
@@ -101,7 +122,8 @@ async function loadTweets() {
         likes: tweet.likes,
         comments: tweet.comments,
         retweets: tweet.retweets,
-        views: tweet.views
+        views: tweet.views,
+        isLiked: tweet.isLiked || false // Liked durumunu ekle
       }));
       renderTweets();
     } else {
@@ -357,7 +379,14 @@ async function loadUserTweets() {
   if (!user || !user._id) return;
 
   try {
-    const response = await fetch(`${API_URL}/api/tweets/user/${user._id}`);
+    let url = `${API_URL}/api/tweets/user/${user._id}`;
+    
+    // Current user ID'yi parameter olarak ekle
+    if (user._id) {
+      url += `?currentUserId=${user._id}`;
+    }
+    
+    const response = await fetch(url);
     const data = await response.json();
     
     if (data.success) {
@@ -409,6 +438,12 @@ function displayUserTweets(userTweets) {
   // Ana sayfadaki tweet template'ini kullanarak her tweet'i render et
   userTweets.forEach(tweet => {
     const tweetEl = tweetTemplate.content.cloneNode(true);
+    
+    // Tweet ID'sini data attribute olarak ekle
+    const tweetContainer = tweetEl.querySelector('.tweet');
+    if (tweetContainer) {
+      tweetContainer.dataset.tweetId = tweet._id;
+    }
     
     // Avatar
     const avatar = tweetEl.querySelector('.avatar');
@@ -474,6 +509,18 @@ function displayUserTweets(userTweets) {
     const commentAction = tweetEl.querySelector('.comment-action');
     const retweetAction = tweetEl.querySelector('.retweet-action');
     const likeAction = tweetEl.querySelector('.like-action');
+    const heartIcon = likeAction.querySelector('i');
+    
+    // Liked durumuna göre kalp ikonunu ayarla
+    if (tweet.isLiked) {
+      likeAction.classList.add('liked');
+      heartIcon.classList.remove('far');
+      heartIcon.classList.add('fas'); // Dolu kalp
+    } else {
+      likeAction.classList.remove('liked');
+      heartIcon.classList.remove('fas');
+      heartIcon.classList.add('far'); // Boş kalp
+    }
     
     if (commentAction) {
       commentAction.addEventListener('click', () => commentPost(tweet._id));
@@ -1217,11 +1264,33 @@ async function likeTweet(id) {
     const data = await response.json();
 
     if (data.success) {
-      // Local tweet listesindeki like sayısını güncelle
+      // Local tweet listesindeki like sayısını ve liked durumunu güncelle
       const tweet = tweets.find(t => t.id === id);
       if (tweet) {
         tweet.likes = data.likes;
-        renderTweets();
+        tweet.isLiked = data.liked; // Liked durumunu güncelle
+        
+        // UI'ı güncelle
+        const tweetElement = document.querySelector(`[data-tweet-id="${id}"]`);
+        if (tweetElement) {
+          const likeAction = tweetElement.querySelector('.like-action');
+          const heartIcon = likeAction.querySelector('i');
+          const likeCount = tweetElement.querySelector('.like-count');
+          
+          // Like sayısını güncelle
+          likeCount.textContent = String(data.likes);
+          
+          // Kalp ikonunu güncelle
+          if (data.liked) {
+            likeAction.classList.add('liked');
+            heartIcon.classList.remove('far');
+            heartIcon.classList.add('fas'); // Dolu kalp
+          } else {
+            likeAction.classList.remove('liked');
+            heartIcon.classList.remove('fas');
+            heartIcon.classList.add('far'); // Boş kalp
+          }
+        }
       }
     } else {
       showNotification('Beğeni işlemi başarısız', 'error');
@@ -1338,9 +1407,24 @@ function renderTweets() {
     if (likeCount) likeCount.textContent = String(tweet.likes || 0);
     if (viewCount) viewCount.textContent = String(tweet.views || 0);
     
+    // Like action'ını ayarla
+    const likeAction = tweetEl.querySelector('.like-action');
+    const heartIcon = likeAction.querySelector('i');
+    
+    // Liked durumuna göre kalp ikonunu ayarla
+    if (tweet.isLiked) {
+      likeAction.classList.add('liked');
+      heartIcon.classList.remove('far');
+      heartIcon.classList.add('fas'); // Dolu kalp
+    } else {
+      likeAction.classList.remove('liked');
+      heartIcon.classList.remove('fas');
+      heartIcon.classList.add('far'); // Boş kalp
+    }
+    
     tweetEl.querySelector('.comment-action').addEventListener('click', () => commentPost(tweet.id));
     tweetEl.querySelector('.retweet-action').addEventListener('click', () => retweetPost(tweet.id));
-    tweetEl.querySelector('.like-action').addEventListener('click', () => likeTweet(tweet.id));
+    likeAction.addEventListener('click', () => likeTweet(tweet.id));
     
     tweetList.appendChild(tweetEl);
   });

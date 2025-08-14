@@ -664,6 +664,7 @@ app.get('/api/tweets', async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
+    const userId = req.query.userId; // Kullanıcı ID'sini query parameter'dan al
 
     const tweets = await Tweet.find()
       .populate('userId', 'username displayName profileImage')
@@ -684,6 +685,13 @@ app.get('/api/tweets', async (req, res) => {
         videoUrl = `data:${tweet.videoMimeType};base64,${tweet.video}`;
       }
       
+      // Kullanıcının bu tweet'i beğenip beğenmediğini kontrol et
+      let isLiked = false;
+      if (userId) {
+        const userObjectId = new mongoose.Types.ObjectId(userId);
+        isLiked = tweet.likedBy.includes(userObjectId);
+      }
+      
       return {
         _id: tweet._id,
         content: tweet.content,
@@ -694,6 +702,7 @@ app.get('/api/tweets', async (req, res) => {
         comments: tweet.comments,
         views: tweet.views,
         created_at: tweet.created_at,
+        isLiked: isLiked, // Liked durumunu ekle
         user: {
           _id: tweet.userId._id,
           username: tweet.userId.username,
@@ -729,6 +738,7 @@ app.get('/api/tweets/user/:userId', async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
+    const currentUserId = req.query.currentUserId; // Mevcut kullanıcı ID'si
 
     const tweets = await Tweet.find({ userId })
       .populate('userId', 'username displayName profileImage')
@@ -749,6 +759,13 @@ app.get('/api/tweets/user/:userId', async (req, res) => {
         videoUrl = `data:${tweet.videoMimeType};base64,${tweet.video}`;
       }
       
+      // Kullanıcının bu tweet'i beğenip beğenmediğini kontrol et
+      let isLiked = false;
+      if (currentUserId) {
+        const userObjectId = new mongoose.Types.ObjectId(currentUserId);
+        isLiked = tweet.likedBy.includes(userObjectId);
+      }
+      
       return {
         _id: tweet._id,
         content: tweet.content,
@@ -759,6 +776,7 @@ app.get('/api/tweets/user/:userId', async (req, res) => {
         comments: tweet.comments,
         views: tweet.views,
         created_at: tweet.created_at,
+        isLiked: isLiked, // Liked durumunu ekle
         user: {
           _id: tweet.userId._id,
           username: tweet.userId.username,
