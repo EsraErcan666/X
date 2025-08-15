@@ -36,7 +36,7 @@ function checkAuthentication() {
   
   // Eğer kullanıcı bilgisi yoksa login sayfasına yönlendir
   if (!user) {
-    window.location.href = 'Login.html';
+    window.location.href = 'loading.html?target=Login.html';
     return false;
   }
   
@@ -46,14 +46,14 @@ function checkAuthentication() {
     if (!userData || !userData._id) {
       localStorage.removeItem('user');
       localStorage.removeItem('currentUserId');
-      window.location.href = 'Login.html';
+      window.location.href = 'loading.html?target=Login.html';
       return false;
     }
   } catch (error) {
     // JSON parse hatası varsa login sayfasına yönlendir
     localStorage.removeItem('user');
     localStorage.removeItem('currentUserId');
-    window.location.href = 'Login.html';
+    window.location.href = 'loading.html?target=Login.html';
     return false;
   }
   
@@ -327,9 +327,9 @@ function setupProfileMenu() {
       
       console.log('Profile logout - LocalStorage temizlendi');
       
-      // Login sayfasına yönlendir - Vercel routing uyumlu
+      // Loading sayfası üzerinden Login sayfasına yönlendir
       console.log('Profile logout - Login sayfasına yönlendiriliyor...');
-      window.location.href = '/';
+      window.location.href = 'loading.html?target=Login.html';
     });
   }
 }
@@ -1181,7 +1181,7 @@ function postTweet(fromModal = false) {
   if (!user || !user._id) {
     showNotification('Lütfen giriş yapın', 'error');
     console.log('Kullanıcı bilgisi bulunamadı, login sayfasına yönlendiriliyor');
-    window.location.href = 'login.html';
+    window.location.href = 'loading.html?target=Login.html';
     return;
   }
 
@@ -2979,10 +2979,10 @@ function handleLogout() {
   // Mobile menüyü kapat
   closeMobileProfileMenu();
   
-  // Login sayfasına yönlendir - "/" veya "/login" kullan
+  // Loading sayfası üzerinden Login sayfasına yönlendir
   console.log('Login sayfasına yönlendiriliyor...');
   
-  window.location.href = '/';
+  window.location.href = 'loading.html?target=Login.html';
 }
 
 // Mobile back button'ları başlat

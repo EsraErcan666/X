@@ -505,7 +505,7 @@
                  localStorage.setItem('user', JSON.stringify(result.user));
                  
                  setTimeout(function() {
-                   window.location.href = 'index.html';
+                   window.location.href = 'loading.html?target=index.html';
                  }, 1500);
                } else {
                  alert('Hata: ' + result.message);
@@ -699,7 +699,7 @@
                
                
                setTimeout(function() {
-                 window.location.href = 'index.html';
+                 window.location.href = 'loading.html?target=index.html';
                }, 1500);
              } else {
                alert('Hata: ' + result.message);
@@ -717,7 +717,7 @@
       const password = document.getElementById('password').value;
       
       if (username && password) {
-        window.location.href = 'index.html';
+        window.location.href = 'loading.html?target=index.html';
       } else {
         alert('Lütfen kullanıcı adı ve şifre girin.');
       }
