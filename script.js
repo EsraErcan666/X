@@ -1868,10 +1868,15 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Yorum modal fonksiyonları
-function openCommentModal(tweetId) {
+async function openCommentModal(tweetId) {
   currentTweetForComment = tweetId;
+  
+  // Yerel tweets array'inden tweet'i bul
   const tweet = tweets.find(t => t.id === tweetId);
-  if (!tweet) return;
+  if (!tweet) {
+    showNotification('Tweet bulunamadı', 'error');
+    return;
+  }
   
   const commentModal = document.getElementById('commentModal');
   
@@ -1887,13 +1892,13 @@ function openCommentModal(tweetId) {
   if (tweet.avatar && tweet.avatar.trim() !== '') {
     const avatarUrl = tweet.avatar.startsWith('http') 
       ? tweet.avatar 
-      : `http://localhost:${tweet.avatar}`;
+      : `${API_URL}${tweet.avatar}`;
     originalAvatar.src = avatarUrl;
   } else {
     originalAvatar.src = 'images/logo.png';
   }
   
-  originalName.textContent = tweet.displayName;
+  originalName.textContent = tweet.displayName || tweet.username;
   originalUsername.textContent = `@${tweet.username} · ${tweet.timestamp}`;
   originalText.textContent = tweet.content;
   replyUsername.textContent = `@${tweet.username}`;
@@ -1901,7 +1906,10 @@ function openCommentModal(tweetId) {
   // Tweet resmi varsa göster
   if (tweet.image && tweet.image.trim() !== '') {
     originalImage.style.display = 'block';
-    originalImage.querySelector('img').src = tweet.image; // Data URL olarak geldiği için doğrudan kullan
+    const imageUrl = tweet.image.startsWith('http') 
+      ? tweet.image 
+      : `${API_URL}${tweet.image}`;
+    originalImage.querySelector('img').src = imageUrl;
   } else {
     originalImage.style.display = 'none';
   }
@@ -1921,7 +1929,7 @@ function openCommentModal(tweetId) {
   commentModal.classList.add('active');
   document.body.style.overflow = 'hidden';
   
-  // Yorumları yükle
+  // Yorumları yükle - server'daki _id formatını kullan
   loadComments(tweetId);
 }
 
@@ -2025,6 +2033,7 @@ async function loadComments(tweetId) {
   commentsList.innerHTML = '';
   
   try {
+    // tweetId zaten server'daki _id formatında (loadTweets'de id = tweet._id atanıyor)
     const response = await fetch(`${API_URL}/api/comments/${tweetId}`);
     const data = await response.json();
     
