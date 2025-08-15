@@ -2101,7 +2101,7 @@ function displayComments(comments) {
           <div class="comment-user-info">
             <span class="comment-display-name">${comment.user.displayName || comment.user.username}</span>
             <span class="comment-username">@${comment.user.username}</span>
-            <span class="comment-time">${formatTime(comment.created_at)}</span>
+            <span class="comment-time">${formatTimestamp(comment.created_at)}</span>
           </div>
           ${deleteBtn}
         </div>
@@ -3147,7 +3147,7 @@ function createReplyElement(reply) {
         <div class="reply-user-info">
           <span class="reply-display-name">${reply.user.displayName || reply.user.username}</span>
           <span class="reply-username">@${reply.user.username}</span>
-          <span class="reply-time">${formatTime(reply.created_at)}</span>
+          <span class="reply-time">${formatTimestamp(reply.created_at)}</span>
         </div>
         ${deleteBtn}
       </div>
