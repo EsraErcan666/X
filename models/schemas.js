@@ -176,6 +176,16 @@ const commentSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   }],
+  // Yeni eklenen alanlar - yorumlara cevap için
+  parentCommentId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Comment',
+    default: null // Ana yorum ise null, cevap ise parent comment'in ID'si
+  },
+  replies: {
+    type: Number,
+    default: 0 // Bu yoruma yapılan cevap sayısı
+  },
   created_at: {
     type: Date,
     default: Date.now

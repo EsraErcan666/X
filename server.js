@@ -1245,8 +1245,11 @@ app.get('/api/comments/:tweetId', async (req, res) => {
       });
     }
 
-    // Yorumları getir (kullanıcı bilgileriyle birlikte)
-    const comments = await Comment.find({ tweetId: tweetId })
+    // Sadece ana yorumları getir (parentCommentId: null olanlar)
+    const comments = await Comment.find({ 
+      tweetId: tweetId,
+      parentCommentId: null // Sadece ana yorumlar
+    })
       .populate('userId', 'username displayName profileImage')
       .sort({ created_at: 1 }); // Eskiden yeniye sırala
 
@@ -1257,6 +1260,7 @@ app.get('/api/comments/:tweetId', async (req, res) => {
       user: comment.userId,
       likes: comment.likes,
       likedBy: comment.likedBy,
+      replies: comment.replies || 0, // Cevap sayısı
       created_at: comment.created_at
     }));
 
@@ -1698,6 +1702,153 @@ app.get('/uploads/:filename', (req, res) => {
     
   } catch (error) {
     console.error('Uploads endpoint hatası:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Sunucu hatası'
+    });
+  }
+});
+
+// Yoruma cevap verme endpoint'i
+app.post('/api/comments/:commentId/reply', upload.single('image'), async (req, res) => {
+  try {
+    const { commentId } = req.params;
+    const { content, userId } = req.body;
+
+    // Input validasyonu
+    if (!content || !userId) {
+      return res.status(400).json({
+        success: false,
+        message: 'İçerik ve kullanıcı ID gerekli'
+      });
+    }
+
+    const sanitizedContent = sanitizeInput(content);
+    if (!sanitizedContent || sanitizedContent.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Yorum içeriği geçersiz'
+      });
+    }
+
+    // Parent comment'in var olup olmadığını kontrol et
+    const parentComment = await Comment.findById(commentId);
+    if (!parentComment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Ana yorum bulunamadı'
+      });
+    }
+
+    // Kullanıcının var olup olmadığını kontrol et
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Kullanıcı bulunamadı'
+      });
+    }
+
+    // Resim yükleme işlemi
+    let imagePath = '';
+    if (req.file) {
+      const fileName = `reply-${Date.now()}-${Math.round(Math.random() * 1E9)}.${req.file.originalname.split('.').pop()}`;
+      
+      fileMemoryStore.set(fileName, {
+        buffer: req.file.buffer,
+        mimetype: req.file.mimetype,
+        originalname: req.file.originalname
+      });
+      
+      imagePath = `/uploads/${fileName}`;
+    }
+
+    // Cevap yorumu oluştur
+    const newReply = new Comment({
+      content: sanitizedContent,
+      userId: userId,
+      tweetId: parentComment.tweetId, // Ana yorumun tweet'i
+      parentCommentId: commentId, // Ana yorumun ID'si
+      image: imagePath
+    });
+
+    await newReply.save();
+
+    // Ana yorumun cevap sayısını artır
+    await Comment.findByIdAndUpdate(commentId, {
+      $inc: { replies: 1 }
+    });
+
+    // Tweet'in toplam yorum sayısını artır
+    await Tweet.findByIdAndUpdate(parentComment.tweetId, {
+      $inc: { comments: 1 }
+    });
+
+    // Ana yorum sahibine bildirim gönder (kendi yorumuna cevap vermiyorsa)
+    if (parentComment.userId.toString() !== userId) {
+      const notification = new Notification({
+        type: 'comment',
+        fromUser: userId,
+        toUser: parentComment.userId,
+        tweet: parentComment.tweetId,
+        comment: newReply._id
+      });
+      await notification.save();
+    }
+
+    res.status(201).json({
+      success: true,
+      message: 'Cevap başarıyla eklendi',
+      reply: newReply
+    });
+
+  } catch (error) {
+    console.error('Cevap ekleme hatası:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Sunucu hatası'
+    });
+  }
+});
+
+// Bir yorumun cevaplarını getirme endpoint'i
+app.get('/api/comments/:commentId/replies', async (req, res) => {
+  try {
+    const { commentId } = req.params;
+
+    // Ana yorumun var olup olmadığını kontrol et
+    const parentComment = await Comment.findById(commentId);
+    if (!parentComment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Ana yorum bulunamadı'
+      });
+    }
+
+    // Cevapları getir
+    const replies = await Comment.find({ parentCommentId: commentId })
+      .populate('userId', 'username displayName profileImage')
+      .sort({ created_at: 1 }); // Eskiden yeniye sırala
+
+    const formattedReplies = replies.map(reply => ({
+      _id: reply._id,
+      content: reply.content,
+      image: reply.image,
+      user: reply.userId,
+      likes: reply.likes,
+      likedBy: reply.likedBy,
+      parentCommentId: reply.parentCommentId,
+      created_at: reply.created_at
+    }));
+
+    res.json({
+      success: true,
+      replies: formattedReplies,
+      count: replies.length
+    });
+
+  } catch (error) {
+    console.error('Cevapları getirme hatası:', error);
     res.status(500).json({
       success: false,
       message: 'Sunucu hatası'

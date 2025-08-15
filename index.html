@@ -652,3 +652,94 @@
   <script src="script.js"></script>
 </body>
 </html>
+
+        <!-- Comment Template -->
+        <template id="commentTemplate">
+          <div class="comment-item">
+            <div class="comment-content">
+              <div class="comment-header">
+                <img src="" alt="Avatar" class="comment-avatar" />
+                <div class="comment-user-info">
+                  <span class="comment-display-name"></span>
+                  <span class="comment-username"></span>
+                  <span class="comment-time"></span>
+                </div>
+                <div class="comment-delete-btn" style="display: none;">
+                  <i class="fas fa-trash"></i>
+                </div>
+              </div>
+              <div class="comment-text"></div>
+              <div class="comment-image" style="display: none;">
+                <img src="" alt="Comment image" />
+              </div>
+              <div class="comment-actions">
+                <div class="comment-action like-action">
+                  <i class="far fa-heart"></i>
+                  <span class="like-count">0</span>
+                </div>
+                <div class="comment-action reply-action">
+                  <i class="far fa-comment"></i>
+                  <span>Cevapla</span>
+                </div>
+                <div class="comment-action replies-toggle" style="display: none;">
+                  <i class="fas fa-reply"></i>
+                  <span class="reply-count">0</span>
+                  <span class="replies-text">Cevapları Göster</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <!-- Reply Template -->
+        <template id="replyTemplate">
+          <div class="reply-item">
+            <div class="reply-content">
+              <div class="reply-header">
+                <img src="" alt="Avatar" class="reply-avatar" />
+                <div class="reply-user-info">
+                  <span class="reply-display-name"></span>
+                  <span class="reply-username"></span>
+                  <span class="reply-time"></span>
+                </div>
+                <div class="reply-delete-btn" style="display: none;">
+                  <i class="fas fa-trash"></i>
+                </div>
+              </div>
+              <div class="reply-text"></div>
+              <div class="reply-image" style="display: none;">
+                <img src="" alt="Reply image" />
+              </div>
+              <div class="reply-actions">
+                <div class="reply-action like-action">
+                  <i class="far fa-heart"></i>
+                  <span class="like-count">0</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <!-- Reply Input Template -->
+        <template id="replyInputTemplate">
+          <div class="reply-container">
+            <div class="reply-input-area">
+              <div class="reply-user-info">
+                <img src="" alt="Avatar" class="reply-avatar" />
+                <span class="reply-username"></span>
+              </div>
+              <textarea class="reply-input" placeholder="Cevabınızı yazın..." maxlength="280"></textarea>
+              <div class="reply-actions">
+                <button class="reply-cancel-btn">İptal</button>
+                <button class="reply-submit-btn">Cevapla</button>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <!-- Replies Container Template -->
+        <template id="repliesContainerTemplate">
+          <div class="replies-container">
+            <!-- Cevaplar buraya eklenecek -->
+          </div>
+        </template>

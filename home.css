@@ -2321,4 +2321,260 @@ button.disabled:hover {
     z-index: 10;
   }
 }
+/* Cevap stilleri */
+.reply-container {
+  margin-top: 10px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  border-left: 3px solid #1da1f2;
+}
+
+.reply-input-area {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.reply-user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.reply-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.reply-username {
+  font-size: 14px;
+  color: #657786;
+  font-weight: 500;
+}
+
+.reply-input {
+  width: 100%;
+  min-height: 60px;
+  padding: 12px;
+  border: 1px solid #e1e8ed;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  outline: none;
+}
+
+.reply-input:focus {
+  border-color: #1da1f2;
+  box-shadow: 0 0 0 2px rgba(29, 161, 242, 0.1);
+}
+
+.reply-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.reply-cancel-btn,
+.reply-submit-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.reply-cancel-btn {
+  background-color: #f7f9fa;
+  color: #657786;
+}
+
+.reply-cancel-btn:hover {
+  background-color: #e1e8ed;
+}
+
+.reply-submit-btn {
+  background-color: #1da1f2;
+  color: white;
+}
+
+.reply-submit-btn:hover {
+  background-color: #1991db;
+}
+
+.reply-submit-btn:disabled {
+  background-color: #aab8c2;
+  cursor: not-allowed;
+}
+
+/* Cevaplar container */
+.replies-container {
+  margin-top: 15px;
+  padding-left: 20px;
+  border-left: 2px solid #e1e8ed;
+}
+
+.reply-item {
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.reply-item:last-child {
+  border-bottom: none;
+}
+
+.reply-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reply-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.reply-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.reply-user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.reply-display-name {
+  font-weight: bold;
+  color: #14171a;
+  font-size: 14px;
+}
+
+.reply-username {
+  color: #657786;
+  font-size: 14px;
+}
+
+.reply-time {
+  color: #657786;
+  font-size: 13px;
+}
+
+.reply-delete-btn {
+  position: absolute;
+  right: 0;
+  top: 0;
+  padding: 4px;
+  color: #657786;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.reply-delete-btn:hover {
+  background-color: #fee;
+  color: #e0245e;
+}
+
+.reply-text {
+  font-size: 14px;
+  line-height: 1.4;
+  color: #14171a;
+  margin-left: 40px;
+}
+
+.reply-image {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: 12px;
+  margin-left: 40px;
+  margin-top: 8px;
+}
+
+.reply-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-left: 40px;
+  margin-top: 8px;
+}
+
+.reply-action {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #657786;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 12px;
+  transition: all 0.2s;
+  font-size: 13px;
+}
+
+.reply-action:hover {
+  background-color: rgba(29, 161, 242, 0.1);
+  color: #1da1f2;
+}
+
+.reply-action.like-action:hover {
+  background-color: rgba(233, 30, 99, 0.1);
+  color: #e91e63;
+}
+
+/* Cevap toggle butonu */
+.replies-toggle {
+  color: #1da1f2 !important;
+  font-weight: 500;
+}
+
+.replies-toggle:hover {
+  background-color: rgba(29, 161, 242, 0.1);
+  text-decoration: underline;
+}
+
+/* Boş cevaplar mesajı */
+.no-replies {
+  text-align: center;
+  color: #657786;
+  font-style: italic;
+  padding: 20px;
+}
+
+.error-message {
+  text-align: center;
+  color: #e0245e;
+  padding: 20px;
+}
+
+/* Responsive tasarım */
+@media (max-width: 768px) {
+  .reply-container {
+    padding: 12px;
+  }
+  
+  .replies-container {
+    padding-left: 15px;
+  }
+  
+  .reply-text,
+  .reply-image,
+  .reply-actions {
+    margin-left: 35px;
+  }
+  
+  .reply-avatar {
+    width: 28px;
+    height: 28px;
+  }
+}
 
