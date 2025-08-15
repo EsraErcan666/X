@@ -3024,12 +3024,15 @@ async function replyToComment(commentId, parentCommentElement) {
     submitReply(commentId, this);
   });
   
-  // Cevap alanını comment-content'in hemen sonrasına ekle
+  // Cevap alanını comment-content'in hemen sonrasına ekle (sağa değil alta)
   const commentContent = parentCommentElement.querySelector('.comment-content');
-  commentContent.insertAdjacentElement('afterend', replyContainer.querySelector('.reply-container'));
+  const replyContainerElement = replyContainer.querySelector('.reply-container');
+  
+  // Comment-content'in parent'ına (comment-item) ekle
+  parentCommentElement.appendChild(replyContainerElement);
   
   // Textarea'ya focus ver
-  const textarea = parentCommentElement.querySelector('.reply-input');
+  const textarea = replyContainerElement.querySelector('.reply-input');
   textarea.focus();
 }
 
