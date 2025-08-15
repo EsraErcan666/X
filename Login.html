@@ -497,16 +497,14 @@
                const result = await response.json();
                
                if (result.success) {
-                 alert('Giriş işlemi başarılı! Ana sayfaya yönlendiriliyorsunuz...');
                  loginModal.classList.remove('show');
                  showLoginStep1(); 
                  currentUserId = null; 
                  
                  localStorage.setItem('user', JSON.stringify(result.user));
                  
-                 setTimeout(function() {
-                   window.location.href = 'loading.html?target=index.html';
-                 }, 1500);
+                 // Direkt loading sayfasına yönlendir
+                 window.location.href = 'loading.html?target=index.html';
                } else {
                  alert('Hata: ' + result.message);
                }
@@ -689,18 +687,14 @@
              const result = await response.json();
              
              if (result.success) {
-               alert('Hesap başarıyla oluşturuldu! Ana sayfaya yönlendiriliyorsunuz...');
-               
                // Yeni hesap bilgilerini localStorage'a kaydet
                localStorage.setItem('user', JSON.stringify(result.user));
                
                signupModal.classList.remove('show');
                showStep1();
                
-               
-               setTimeout(function() {
-                 window.location.href = 'loading.html?target=index.html';
-               }, 1500);
+               // Direkt loading sayfasına yönlendir
+               window.location.href = 'loading.html?target=index.html';
              } else {
                alert('Hata: ' + result.message);
              }
