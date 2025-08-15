@@ -1275,6 +1275,74 @@ app.get('/api/comments/:tweetId', async (req, res) => {
   }
 });
 
+// Yorum beğenme/beğenmeme endpoint'i
+app.post('/api/comments/:commentId/like', async (req, res) => {
+  try {
+    const { commentId } = req.params;
+    const { userId } = req.body;
+
+    // Input validasyonu
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Kullanıcı ID gerekli'
+      });
+    }
+
+    // Kullanıcının var olup olmadığını kontrol et
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Kullanıcı bulunamadı'
+      });
+    }
+
+    // Yorumun var olup olmadığını kontrol et
+    const comment = await Comment.findById(commentId);
+    if (!comment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Yorum bulunamadı'
+      });
+    }
+
+    const userObjectId = new mongoose.Types.ObjectId(userId);
+    const isLiked = comment.likedBy.includes(userObjectId);
+
+    if (isLiked) {
+      // Beğeniyi kaldır
+      await Comment.findByIdAndUpdate(commentId, {
+        $pull: { likedBy: userObjectId },
+        $inc: { likes: -1 }
+      });
+    } else {
+      // Beğeni ekle
+      await Comment.findByIdAndUpdate(commentId, {
+        $addToSet: { likedBy: userObjectId },
+        $inc: { likes: 1 }
+      });
+    }
+
+    // Güncellenmiş yorumu getir
+    const updatedComment = await Comment.findById(commentId);
+
+    res.json({
+      success: true,
+      isLiked: !isLiked,
+      likes: updatedComment.likes,
+      message: isLiked ? 'Beğeni kaldırıldı' : 'Yorum beğenildi'
+    });
+
+  } catch (error) {
+    console.error('Yorum beğeni hatası:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Sunucu hatası'
+    });
+  }
+});
+
 // Kullanıcının beğendiği tweetleri getirme endpoint'i
 app.get('/api/user/:userId/liked-tweets', async (req, res) => {
   try {

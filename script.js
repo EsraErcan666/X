@@ -2103,6 +2103,17 @@ function displayComments(comments) {
       deleteBtn = `<div class="comment-delete-btn" onclick="deleteComment('${comment._id}')"><i class="fas fa-trash"></i></div>`;
     }
     
+    // Kullanıcının bu yorumu beğenip beğenmediğini kontrol et
+    let isLiked = false;
+    let likeIconClass = 'far fa-heart';
+    let likeColor = '';
+    
+    if (currentUser && comment.likedBy && comment.likedBy.includes(currentUser._id)) {
+      isLiked = true;
+      likeIconClass = 'fas fa-heart';
+      likeColor = 'style="color: #e91e63;"';
+    }
+    
     commentEl.innerHTML = `
       <img src="${avatarSrc}" alt="User Avatar" class="comment-avatar-small" />
       <div class="comment-content">
@@ -2115,8 +2126,8 @@ function displayComments(comments) {
         <div class="comment-text">${comment.content}</div>
         ${imageHtml}
         <div class="comment-actions-small">
-          <div class="comment-action-small" onclick="likeComment('${comment._id}')">
-            <i class="far fa-heart"></i>
+          <div class="comment-action-small ${isLiked ? 'liked' : ''}" onclick="likeComment('${comment._id}')">
+            <i class="${likeIconClass}" ${likeColor}></i>
             <span>${comment.likes || 0}</span>
           </div>
         </div>
@@ -2618,9 +2629,58 @@ async function deleteTweet(tweetId) {
 }
 
 // Yorum beğenme fonksiyonu (ileride implement edilebilir)
-function likeComment(commentId) {
-  console.log('Yorum beğenildi:', commentId);
-  // Bu fonksiyon ileride implement edilebilir
+async function likeComment(commentId) {
+  const user = JSON.parse(localStorage.getItem('user'));
+  if (!user || !user._id) {
+    showNotification('Lütfen giriş yapın', 'error');
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/api/comments/${commentId}/like`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ userId: user._id })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      // Yorumu HTML'de bul ve beğeni bilgilerini güncelle
+      const commentElement = document.querySelector(`[data-comment-id="${commentId}"]`);
+      if (commentElement) {
+        const likeAction = commentElement.querySelector('.comment-action-small');
+        const likeIcon = likeAction.querySelector('i');
+        const likeCount = likeAction.querySelector('span');
+        
+        if (data.isLiked) {
+          // Beğenildi
+          likeAction.classList.add('liked');
+          likeIcon.classList.remove('far');
+          likeIcon.classList.add('fas');
+          likeIcon.style.color = '#e91e63';
+        } else {
+          // Beğeni kaldırıldı
+          likeAction.classList.remove('liked');
+          likeIcon.classList.remove('fas');
+          likeIcon.classList.add('far');
+          likeIcon.style.color = '';
+        }
+        
+        // Beğeni sayısını güncelle
+        likeCount.textContent = data.likes;
+      }
+      
+      console.log(data.isLiked ? 'Yorum beğenildi' : 'Yorum beğenisi kaldırıldı');
+    } else {
+      showNotification('Beğeni işlemi başarısız: ' + data.message, 'error');
+    }
+  } catch (error) {
+    console.error('Yorum beğeni hatası:', error);
+    showNotification('Beğeni işlemi sırasında hata oluştu', 'error');
+  }
 }
 
 
