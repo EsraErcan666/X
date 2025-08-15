@@ -2091,41 +2091,39 @@ function displayComments(comments) {
     }
     
     // Cevap sayısı gösterimi
-    const replyCount = comment.replies || 0;
+    const replyCount = comment.replies || 0;  
     const replyText = replyCount > 0 ? `${replyCount} Cevap` : '';
-    
-    commentEl.innerHTML = `
-      <div class="comment-content">
-        <div class="comment-header">
-          <img src="${avatarSrc}" alt="Avatar" class="comment-avatar">
-          <div class="comment-user-info">
-            <span class="comment-display-name">${comment.user.displayName || comment.user.username}</span>
-            <span class="comment-username">@${comment.user.username}</span>
-            <span class="comment-time">${formatTimestamp(comment.created_at)}</span>
-          </div>
-          ${deleteBtn}
-        </div>
-        <div class="comment-text">${comment.content}</div>
-        ${comment.image ? `<img src="${API_URL}${comment.image}" alt="Comment image" class="comment-image">` : ''}
-        <div class="comment-actions">
-          <div class="comment-action like-action" onclick="likeComment('${comment._id}')">
-            <i class="${likeIconClass}" style="${likeColor}"></i>
-            <span class="like-count">${comment.likes || 0}</span>
-          </div>
-          <div class="comment-action reply-action" onclick="replyToComment('${comment._id}', this.closest('.comment-item'))">
-            <i class="far fa-comment"></i>
-            <span>Cevapla</span>
-          </div>
-          ${replyCount > 0 ? `
-            <div class="comment-action replies-toggle" onclick="toggleReplies('${comment._id}', this)">
-              <i class="fas fa-reply"></i>
-              <span class="reply-count">${replyCount}</span>
-              <span>Cevapları Göster</span>
-            </div>
-          ` : ''}
-        </div>
+
+commentEl.innerHTML = `
+  <div class="comment-content">
+    <div class="comment-header">
+      <img src="${avatarSrc}" alt="Avatar" class="comment-avatar">
+      <div class="comment-user-info">
+        <span class="comment-display-name">${comment.user.displayName || comment.user.username}</span>
+        <span class="comment-username">@${comment.user.username}</span>
+        <span class="comment-time">${formatTimestamp(comment.created_at)}</span>
       </div>
-    `;
+      ${deleteBtn}
+    </div>
+    <div class="comment-text">${comment.content}</div>
+    ${comment.image ? `<img src="${API_URL}${comment.image}" alt="Comment image" class="comment-image">` : ''}
+    <div class="comment-actions">
+      <div class="comment-action like-action" onclick="likeComment('${comment._id}')">
+        <i class="${likeIconClass}" style="${likeColor}"></i>
+        <span class="like-count">${comment.likes || 0}</span>
+      </div>
+      <div class="comment-action reply-action" onclick="replyToComment('${comment._id}', this.closest('.comment-item'))">
+        <i class="far fa-comment"></i>
+        <span>Cevapla</span>
+      </div>
+      <div class="comment-action replies-toggle" onclick="toggleReplies('${comment._id}', this)" style="${replyCount > 0 ? 'display: flex;' : 'display: none;'}">
+        <i class="fas fa-reply"></i>
+        <span class="reply-count">${replyCount}</span>
+        <span>Cevapları Göster</span>
+      </div>
+    </div>
+  </div>
+`;
     
     commentsList.appendChild(commentEl);
   });
@@ -2998,35 +2996,40 @@ async function replyToComment(commentId, parentCommentElement) {
     return;
   }
 
-  // Cevap input alanı oluştur
-  const replyContainer = document.createElement('div');
-  replyContainer.className = 'reply-container';
-  replyContainer.innerHTML = `
-    <div class="reply-input-area">
-      <div class="reply-user-info">
-        <img src="${user.profileImage || 'images/logo.png'}" alt="Avatar" class="reply-avatar">
-        <span class="reply-username">@${user.username}</span>
-      </div>
-      <textarea class="reply-input" placeholder="Cevabınızı yazın..." maxlength="280"></textarea>
-      <div class="reply-actions">
-        <button class="reply-cancel-btn" onclick="cancelReply(this)">İptal</button>
-        <button class="reply-submit-btn" onclick="submitReply('${commentId}', this)">Cevapla</button>
-      </div>
-    </div>
-  `;
-  
   // Mevcut cevap alanını kaldır
   const existingReply = parentCommentElement.querySelector('.reply-container');
   if (existingReply) {
     existingReply.remove();
   }
+
+  // Template'i clone et
+  const template = document.getElementById('replyInputTemplate');
+  const replyContainer = template.content.cloneNode(true);
+  
+  // Template verilerini doldur
+  const avatar = replyContainer.querySelector('.reply-avatar');
+  const username = replyContainer.querySelector('.reply-username');
+  const cancelBtn = replyContainer.querySelector('.reply-cancel-btn');
+  const submitBtn = replyContainer.querySelector('.reply-submit-btn');
+  
+  avatar.src = user.profileImage || 'images/logo.png';
+  username.textContent = `@${user.username}`;
+  
+  // Event listener'ları ekle
+  cancelBtn.addEventListener('click', function() {
+    this.closest('.reply-container').remove();
+  });
+  
+  submitBtn.addEventListener('click', function() {
+    submitReply(commentId, this);
+  });
   
   // Cevap alanını comment-content'in hemen sonrasına ekle
   const commentContent = parentCommentElement.querySelector('.comment-content');
-  commentContent.insertAdjacentElement('afterend', replyContainer);
+  commentContent.insertAdjacentElement('afterend', replyContainer.querySelector('.reply-container'));
   
   // Textarea'ya focus ver
-  const textarea = replyContainer.querySelector('.reply-input');
+  const textarea = parentCommentElement.querySelector('.reply-input');
   textarea.focus();
 }
 
@@ -3077,20 +3080,38 @@ async function submitReply(commentId, buttonElement) {
     
     if (data.success) {
       showNotification('Cevap başarıyla gönderildi', 'success');
+      
+      // Reply container'ı kaldır
       replyContainer.remove();
       
-      // Cevap sayısını güncelle
-      const commentElement = buttonElement.closest('.comment-item');
-      const replyCountElement = commentElement.querySelector('.reply-count');
-      if (replyCountElement) {
-        const currentCount = parseInt(replyCountElement.textContent) || 0;
-        replyCountElement.textContent = currentCount + 1;
-      }
+      // Comment element'i bul - reply container'ın bir önceki sibling'i comment-content
+      const commentContent = replyContainer.previousElementSibling;
+      const commentElement = commentContent ? commentContent.closest('.comment-item') : null;
       
-      // Eğer cevaplar açıksa, yeni cevabı ekle
-      const repliesContainer = commentElement.querySelector('.replies-container');
-      if (repliesContainer && repliesContainer.style.display !== 'none') {
-        loadReplies(commentId, repliesContainer);
+      if (commentElement) {
+        // Cevap sayısını güncelle
+        const replyCountElement = commentElement.querySelector('.reply-count');
+        if (replyCountElement) {
+          const currentCount = parseInt(replyCountElement.textContent) || 0;
+          replyCountElement.textContent = currentCount + 1;
+        }
+        
+        // Cevapları görüntüle butonunu göster (eğer gizliyse)
+        const repliesToggle = commentElement.querySelector('.replies-toggle');
+        if (repliesToggle) {
+          repliesToggle.style.display = 'flex';
+          // Buton metnini güncelle
+          const toggleText = repliesToggle.querySelector('span:last-child');
+          if (toggleText) {
+            toggleText.textContent = 'Cevapları Göster';
+          }
+        }
+        
+        // Eğer cevaplar açıksa, yeni cevabı ekle
+        const repliesContainer = commentElement.querySelector('.replies-container');
+        if (repliesContainer && repliesContainer.style.display !== 'none') {
+          loadReplies(commentId, repliesContainer);
+        }
       }
     } else {
       showNotification(data.message || 'Cevap gönderilemedi', 'error');
@@ -3135,6 +3156,11 @@ async function loadReplies(commentId, repliesContainer) {
 function createReplyElement(reply) {
   const currentUser = JSON.parse(localStorage.getItem('user'));
   
+  // Template'i clone et
+  const template = document.getElementById('replyTemplate');
+  const replyElement = template.content.cloneNode(true);
+  
+  // Avatar source'u belirle
   let avatarSrc = 'images/logo.png';
   if (reply.user.profileImage && reply.user.profileImage.trim() !== '') {
     avatarSrc = reply.user.profileImage.startsWith('http') 
@@ -3142,48 +3168,59 @@ function createReplyElement(reply) {
       : `${API_URL}${reply.user.profileImage}`;
   }
   
-  let deleteBtn = '';
+  // Template verilerini doldur
+  const replyItem = replyElement.querySelector('.reply-item');
+  const avatar = replyElement.querySelector('.reply-avatar');
+  const displayName = replyElement.querySelector('.reply-display-name');
+  const username = replyElement.querySelector('.reply-username');
+  const time = replyElement.querySelector('.reply-time');
+  const deleteBtn = replyElement.querySelector('.reply-delete-btn');
+  const replyText = replyElement.querySelector('.reply-text');
+  const replyImage = replyElement.querySelector('.reply-image');
+  const likeIcon = replyElement.querySelector('.like-action i');
+  const likeCount = replyElement.querySelector('.like-count');
+  const likeAction = replyElement.querySelector('.like-action');
+  
+  // Data attribute'u ekle
+  replyItem.dataset.replyId = reply._id;
+  
+  // Verileri doldur
+  avatar.src = avatarSrc;
+  displayName.textContent = reply.user.displayName || reply.user.username;
+  username.textContent = `@${reply.user.username}`;
+  time.textContent = formatTimestamp(reply.created_at);
+  replyText.textContent = reply.content;
+  
+  // Silme butonu kontrolü
   if (currentUser && currentUser._id === reply.user._id) {
-    deleteBtn = `<div class="reply-delete-btn" onclick="deleteReply('${reply._id}')"><i class="fas fa-trash"></i></div>`;
+    deleteBtn.style.display = 'block';
+    deleteBtn.addEventListener('click', function() {
+      deleteReply(reply._id);
+    });
   }
   
-  let isLiked = false;
-  let likeIconClass = 'far fa-heart';
-  let likeColor = '';
+  // Resim kontrolü
+  if (reply.image) {
+    replyImage.style.display = 'block';
+    replyImage.querySelector('img').src = `${API_URL}${reply.image}`;
+  }
   
+  // Beğeni durumu
+  let isLiked = false;
   if (currentUser && reply.likedBy && reply.likedBy.includes(currentUser._id)) {
     isLiked = true;
-    likeIconClass = 'fas fa-heart';
-    likeColor = 'color: #e91e63;';
+    likeIcon.className = 'fas fa-heart';
+    likeIcon.style.color = '#e91e63';
   }
   
-  const replyElement = document.createElement('div');
-  replyElement.className = 'reply-item';
-  replyElement.dataset.replyId = reply._id;
+  likeCount.textContent = reply.likes || 0;
   
-  replyElement.innerHTML = `
-    <div class="reply-content">
-      <div class="reply-header">
-        <img src="${avatarSrc}" alt="Avatar" class="reply-avatar">
-        <div class="reply-user-info">
-          <span class="reply-display-name">${reply.user.displayName || reply.user.username}</span>
-          <span class="reply-username">@${reply.user.username}</span>
-          <span class="reply-time">${formatTimestamp(reply.created_at)}</span>
-        </div>
-        ${deleteBtn}
-      </div>
-      <div class="reply-text">${reply.content}</div>
-      ${reply.image ? `<img src="${API_URL}${reply.image}" alt="Reply image" class="reply-image">` : ''}
-      <div class="reply-actions">
-        <div class="reply-action like-action" onclick="likeReply('${reply._id}')">
-          <i class="${likeIconClass}" style="${likeColor}"></i>
-          <span class="like-count">${reply.likes || 0}</span>
-        </div>
-      </div>
-    </div>
-  `;
+  // Beğeni event listener'ı
+  likeAction.addEventListener('click', function() {
+    likeReply(reply._id);
+  });
   
-  return replyElement;
+  return replyElement.querySelector('.reply-item');
 }
 
 // Cevapları göster/gizle fonksiyonu
