@@ -3030,9 +3030,25 @@ async function replyToComment(commentId, parentCommentElement) {
 
 // Cevap gönderme fonksiyonu
 async function submitReply(commentId, buttonElement) {
+  console.log('submitReply çağrıldı:', { commentId, buttonElement });
+  
   const user = JSON.parse(localStorage.getItem('user'));
+  console.log('Kullanıcı:', user);
+  
   const replyContainer = buttonElement.closest('.reply-container');
+  
+  if (!replyContainer) {
+    showNotification('Cevap alanı bulunamadı', 'error');
+    return;
+  }
+  
   const replyInput = replyContainer.querySelector('.reply-input');
+  
+  if (!replyInput) {
+    showNotification('Cevap input alanı bulunamadı', 'error');
+    return;
+  }
+  
   const content = replyInput.value.trim();
   
   if (!content) {
@@ -3041,6 +3057,7 @@ async function submitReply(commentId, buttonElement) {
   }
   
   try {
+    console.log('API isteği gönderiliyor:', `${API_URL}/api/comments/${commentId}/reply`);
     const response = await fetch(`${API_URL}/api/comments/${commentId}/reply`, {
       method: 'POST',
       headers: {
@@ -3052,14 +3069,16 @@ async function submitReply(commentId, buttonElement) {
       })
     });
     
+    console.log('API yanıtı:', response.status);
     const data = await response.json();
+    console.log('API verisi:', data);
     
     if (data.success) {
       showNotification('Cevap başarıyla gönderildi', 'success');
       replyContainer.remove();
       
       // Cevap sayısını güncelle
-      const commentElement = replyContainer.closest('.comment-item');
+      const commentElement = buttonElement.closest('.comment-item');
       const replyCountElement = commentElement.querySelector('.reply-count');
       if (replyCountElement) {
         const currentCount = parseInt(replyCountElement.textContent) || 0;
@@ -3075,7 +3094,7 @@ async function submitReply(commentId, buttonElement) {
       showNotification(data.message || 'Cevap gönderilemedi', 'error');
     }
   } catch (error) {
-    console.error('Cevap gönderme hatası:', error);
+    console.error('Detaylı hata:', error);
     showNotification('Bir hata oluştu', 'error');
   }
 }

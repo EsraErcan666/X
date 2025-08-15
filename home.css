@@ -2321,61 +2321,35 @@ button.disabled:hover {
     z-index: 10;
   }
 }
-/* Cevap stilleri */
+/* Cevap stilleri - Dark Theme */
 .reply-container {
   margin-top: 10px;
-  padding: 15px;
-  background-color: #f8f9fa;
-  border-radius: 12px;
-  border-left: 3px solid #1da1f2;
-}
-
-.reply-input-area {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.reply-user-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.reply-avatar {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.reply-username {
-  font-size: 14px;
-  color: #657786;
-  font-weight: 500;
+  padding: 10px;
+  border: 1px solid #38444d;
+  border-radius: 8px;
+  background-color: #192734;
 }
 
 .reply-input {
   width: 100%;
   min-height: 60px;
-  padding: 12px;
-  border: 1px solid #e1e8ed;
-  border-radius: 8px;
-  font-size: 14px;
-  font-family: inherit;
+  border: none;
   resize: vertical;
+  font-family: inherit;
+  background-color: transparent;
+  color: #ffffff;
   outline: none;
 }
 
-.reply-input:focus {
-  border-color: #1da1f2;
-  box-shadow: 0 0 0 2px rgba(29, 161, 242, 0.1);
+.reply-input::placeholder {
+  color: #8899a6;
 }
 
 .reply-actions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+  margin-top: 10px;
 }
 
 .reply-cancel-btn,
@@ -2389,12 +2363,14 @@ button.disabled:hover {
 }
 
 .reply-cancel-btn {
-  background-color: #f7f9fa;
-  color: #657786;
+  background-color: #253341;
+  color: #8899a6;
+  border: 1px solid #38444d;
 }
 
 .reply-cancel-btn:hover {
-  background-color: #e1e8ed;
+  background-color: #38444d;
+  color: #ffffff;
 }
 
 .reply-submit-btn {
@@ -2407,20 +2383,21 @@ button.disabled:hover {
 }
 
 .reply-submit-btn:disabled {
-  background-color: #aab8c2;
+  background-color: #38444d;
+  color: #657786;
   cursor: not-allowed;
 }
 
-/* Cevaplar container */
+/* Cevaplar container - Dark Theme */
 .replies-container {
   margin-top: 15px;
   padding-left: 20px;
-  border-left: 2px solid #e1e8ed;
+  border-left: 2px solid #38444d;
 }
 
 .reply-item {
   padding: 12px 0;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #253341;
 }
 
 .reply-item:last-child {
@@ -2456,17 +2433,17 @@ button.disabled:hover {
 
 .reply-display-name {
   font-weight: bold;
-  color: #14171a;
+  color: #ffffff;
   font-size: 14px;
 }
 
 .reply-username {
-  color: #657786;
+  color: #8899a6;
   font-size: 14px;
 }
 
 .reply-time {
-  color: #657786;
+  color: #8899a6;
   font-size: 13px;
 }
 
@@ -2475,21 +2452,21 @@ button.disabled:hover {
   right: 0;
   top: 0;
   padding: 4px;
-  color: #657786;
+  color: #8899a6;
   cursor: pointer;
   border-radius: 50%;
   transition: all 0.2s;
 }
 
 .reply-delete-btn:hover {
-  background-color: #fee;
+  background-color: rgba(224, 36, 94, 0.1);
   color: #e0245e;
 }
 
 .reply-text {
   font-size: 14px;
   line-height: 1.4;
-  color: #14171a;
+  color: #ffffff;
   margin-left: 40px;
 }
 
@@ -2513,7 +2490,7 @@ button.disabled:hover {
   display: flex;
   align-items: center;
   gap: 4px;
-  color: #657786;
+  color: #8899a6;
   cursor: pointer;
   padding: 4px 8px;
   border-radius: 12px;
@@ -2531,7 +2508,7 @@ button.disabled:hover {
   color: #e91e63;
 }
 
-/* Cevap toggle butonu */
+/* Cevap toggle butonu - Dark Theme */
 .replies-toggle {
   color: #1da1f2 !important;
   font-weight: 500;
@@ -2542,10 +2519,10 @@ button.disabled:hover {
   text-decoration: underline;
 }
 
-/* Boş cevaplar mesajı */
+/* Boş cevaplar mesajı - Dark Theme */
 .no-replies {
   text-align: center;
-  color: #657786;
+  color: #8899a6;
   font-style: italic;
   padding: 20px;
 }
@@ -2554,6 +2531,27 @@ button.disabled:hover {
   text-align: center;
   color: #e0245e;
   padding: 20px;
+}
+
+/* Cevap input alanı focus durumu */
+.reply-input:focus {
+  outline: none;
+  border-bottom: 2px solid #1da1f2;
+}
+
+/* Cevap kullanıcı bilgileri */
+.reply-input-area {
+  background-color: #192734;
+}
+
+.reply-user-info {
+  margin-bottom: 8px;
+}
+
+.reply-username {
+  color: #8899a6;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 /* Responsive tasarım */
