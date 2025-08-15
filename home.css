@@ -2323,11 +2323,12 @@ button.disabled:hover {
 }
 /* Cevap stilleri - Dark Theme */
 .reply-container {
-  margin-top: 10px;
-  padding: 10px;
+  margin: 15px 0;
+  padding: 15px;
   border: 1px solid #38444d;
-  border-radius: 8px;
+  border-radius: 12px;
   background-color: #192734;
+  margin-left: 0; /* Sağa kaymayı önle */
 }
 
 .reply-input {
@@ -2541,11 +2542,23 @@ button.disabled:hover {
 
 /* Cevap kullanıcı bilgileri */
 .reply-input-area {
-  background-color: #192734;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .reply-user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin-bottom: 8px;
+}
+
+.reply-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .reply-username {

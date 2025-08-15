@@ -3021,7 +3021,9 @@ async function replyToComment(commentId, parentCommentElement) {
     existingReply.remove();
   }
   
-  parentCommentElement.appendChild(replyContainer);
+  // Cevap alanını comment-content'in hemen sonrasına ekle
+  const commentContent = parentCommentElement.querySelector('.comment-content');
+  commentContent.insertAdjacentElement('afterend', replyContainer);
   
   // Textarea'ya focus ver
   const textarea = replyContainer.querySelector('.reply-input');
@@ -3241,7 +3243,36 @@ async function deleteReply(replyId) {
       // Cevap elementini kaldır
       const replyElement = document.querySelector(`[data-reply-id="${replyId}"]`);
       if (replyElement) {
+        const repliesContainer = replyElement.closest('.replies-container');
         replyElement.remove();
+        
+        // Kalan cevap sayısını kontrol et
+        const remainingReplies = repliesContainer.querySelectorAll('.reply-item');
+        
+        if (remainingReplies.length === 0) {
+          // Hiç cevap kalmadıysa "cevapları görüntüle" butonunu gizle
+          const commentElement = repliesContainer.closest('.comment-item');
+          const repliesToggle = commentElement.querySelector('.replies-toggle');
+          if (repliesToggle) {
+            repliesToggle.style.display = 'none';
+          }
+          
+          // Replies container'ı da gizle
+          repliesContainer.style.display = 'none';
+          
+          // Cevap sayısını sıfırla
+          const replyCountElement = commentElement.querySelector('.reply-count');
+          if (replyCountElement) {
+            replyCountElement.textContent = '0';
+          }
+        } else {
+          // Cevap sayısını güncelle
+          const commentElement = repliesContainer.closest('.comment-item');
+          const replyCountElement = commentElement.querySelector('.reply-count');
+          if (replyCountElement) {
+            replyCountElement.textContent = remainingReplies.length;
+          }
+        }
       }
     } else {
       showNotification(data.message || 'Cevap silinemedi', 'error');
