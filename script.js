@@ -2063,6 +2063,7 @@ function displayComments(comments) {
   comments.forEach(comment => {
     const commentEl = document.createElement('div');
     commentEl.className = 'comment-item';
+    commentEl.setAttribute('data-comment-id', comment._id);
     commentEl.dataset.commentId = comment._id;
     
     // Avatar
@@ -2619,7 +2620,7 @@ async function deleteTweet(tweetId) {
   }
 }
 
-// Yorum beğenme fonksiyonu (ileride implement edilebilir)
+// likeComment fonksiyonunu güvenli hale getir (yaklaşık 2646. satır)
 async function likeComment(commentId) {
   const user = JSON.parse(localStorage.getItem('user'));
   if (!user || !user._id) {
@@ -2639,38 +2640,32 @@ async function likeComment(commentId) {
     const data = await response.json();
 
     if (data.success) {
-      // Yorumu HTML'de bul ve beğeni bilgilerini güncelle
+      // Comment element'i güvenli şekilde bul
       const commentElement = document.querySelector(`[data-comment-id="${commentId}"]`);
       if (commentElement) {
-        const likeAction = commentElement.querySelector('.comment-action-small');
-        const likeIcon = likeAction.querySelector('i');
-        const likeCount = likeAction.querySelector('span');
+        const likeCountElement = commentElement.querySelector('.like-count');
+        const likeIcon = commentElement.querySelector('.like-action i');
         
-        if (data.isLiked) {
-          // Beğenildi
-          likeAction.classList.add('liked');
-          likeIcon.classList.remove('far');
-          likeIcon.classList.add('fas');
-          likeIcon.style.color = '#e91e63';
-        } else {
-          // Beğeni kaldırıldı
-          likeAction.classList.remove('liked');
-          likeIcon.classList.remove('fas');
-          likeIcon.classList.add('far');
-          likeIcon.style.color = '';
+        if (likeCountElement && likeIcon) {
+          likeCountElement.textContent = data.likes;
+          
+          if (data.isLiked) {
+            likeIcon.className = 'fas fa-heart';
+            likeIcon.style.color = '#e0245e';
+          } else {
+            likeIcon.className = 'far fa-heart';
+            likeIcon.style.color = '';
+          }
         }
-        
-        // Beğeni sayısını güncelle
-        likeCount.textContent = data.likes;
       }
       
-      console.log(data.isLiked ? 'Yorum beğenildi' : 'Yorum beğenisi kaldırıldı');
+      showNotification(data.isLiked ? 'Beğenildi' : 'Beğeni kaldırıldı', 'success');
     } else {
-      showNotification('Beğeni işlemi başarısız: ' + data.message, 'error');
+      showNotification('Bir hata oluştu', 'error');
     }
   } catch (error) {
-    console.error('Yorum beğeni hatası:', error);
-    showNotification('Beğeni işlemi sırasında hata oluştu', 'error');
+    console.error('Beğeni hatası:', error);
+    showNotification('Bir hata oluştu', 'error');
   }
 }
 

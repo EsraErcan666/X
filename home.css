@@ -1764,8 +1764,6 @@ button.disabled:hover {
   padding: 16px;
   border-bottom: 1px solid #2f3336;
   display: flex;
-  flex-direction: column; /* Dikey sıralama */
-  width: 100%;
   gap: 12px;
 }
 
@@ -1781,8 +1779,7 @@ button.disabled:hover {
 }
 
 .comment-content {
-  width: 100%;
-  margin-bottom: 0; /* Alt margin kaldır */
+  flex: 1;
 }
 
 .comment-header {
@@ -2326,13 +2323,12 @@ button.disabled:hover {
 }
 /* Cevap stilleri - Dark Theme */
 .reply-container {
-  margin: 15px 0 15px 0; /* Sadece üst-alt margin */
+  margin: 15px 0;
   padding: 15px;
   border: 1px solid #38444d;
   border-radius: 12px;
   background-color: #192734;
-  width: 100%; /* Tam genişlik */
-  box-sizing: border-box; /* Padding dahil genişlik hesabı */
+  margin-left: 0; /* Sağa kaymayı önle */
 }
 
 .reply-input {
@@ -2398,7 +2394,6 @@ button.disabled:hover {
   margin-top: 15px;
   padding-left: 20px;
   border-left: 2px solid #38444d;
-  width: calc(100% - 20px); /* Padding'i hesaba kat */
 }
 
 .reply-item {
